@@ -9,6 +9,8 @@ import time
 import datetime
 import os
 
+from analyze import find_colored_regions, get_valid_regions
+
 
 def get_window_rect(window_title):
     """获取指定窗口的坐标和尺寸（支持多显示器）"""
@@ -79,60 +81,6 @@ def capture_screen_region(rect):
     win32gui.ReleaseDC(win32gui.GetDesktopWindow(), desktop_dc)
 
     return pil_img
-
-
-def find_colored_regions(img, target_colors_rgb, tolerance=10):
-    """在图像中查找指定颜色区域并返回二值掩码（容差可调整）"""
-
-    # 创建空白掩码
-    combined_mask = np.zeros(img.shape[:2], dtype=np.uint8)
-
-    # 处理每个目标颜色
-    for color_rgb in target_colors_rgb:
-        # 转换颜色到BGR顺序（OpenCV使用BGR）
-        color_bgr = np.array(
-            [color_rgb[2], color_rgb[1], color_rgb[0]], dtype=int)
-
-        # 计算容差范围
-        lower_color = np.clip(color_bgr - tolerance, 0, 255).astype(np.uint8)
-        upper_color = np.clip(color_bgr + tolerance, 0, 255).astype(np.uint8)
-        # print(f"处理颜色: {color_rgb} (BGR: {color_bgr.tolist()})，容差范围: {lower_color.tolist()} - {upper_color.tolist()}")
-        # 创建颜色掩码
-        color_mask = cv2.inRange(img, lower_color, upper_color)
-
-        # 将当前颜色的掩码加入到组合掩码中
-        combined_mask = cv2.bitwise_or(combined_mask, color_mask)
-
-    # 形态学操作增强区域
-    kernel = np.ones((5, 5), np.uint8)
-    cleaned_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_CLOSE, kernel)
-    cleaned_mask = cv2.morphologyEx(cleaned_mask, cv2.MORPH_OPEN, kernel)
-
-    return cleaned_mask
-
-
-def get_valid_regions(img, mask, min_area=2000):
-    """从掩码中提取符合条件的区域"""
-    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(
-        mask, connectivity=8)
-
-    valid_regions = []
-    for label in range(1, num_labels):  # 跳过背景标签0
-        x = stats[label, cv2.CC_STAT_LEFT]
-        y = stats[label, cv2.CC_STAT_TOP]
-        w = stats[label, cv2.CC_STAT_WIDTH]
-        h = stats[label, cv2.CC_STAT_HEIGHT]
-        area = stats[label, cv2.CC_STAT_AREA]
-
-        if area >= min_area:
-            cropped_img = img[y:y+h, x:x+w].copy()
-            valid_regions.append({
-                "id": label,
-                "bbox": (x, y, w, h),
-                "region": cropped_img
-            })
-
-    return valid_regions
 
 
 def main():
