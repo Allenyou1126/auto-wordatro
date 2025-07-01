@@ -5,3 +5,10 @@ __pycache__/
 *.pyd
 .Python
 .env
+
+src/uploads/*
+!src/uploads/.gitkeep
+src/capture/*
+!src/capture/.gitkeep
+src/results/*
+!src/results/.gitkeep
