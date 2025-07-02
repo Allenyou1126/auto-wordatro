@@ -24,7 +24,8 @@ lerna-debug.log*
 pnpm-*.yaml
 
 node_modules
-frontend
+frontend/*
+!frontend/.gitkeep
 *.local
 
 # Editor directories and files
