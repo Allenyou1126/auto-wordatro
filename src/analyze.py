@@ -209,7 +209,12 @@ def analyze(filename: str):
             # 保存结果
             category_results.append({
                 "id": f"{category[:1]}-{i+1}",
-                "bbox": region["bbox"],
+                "bbox": {
+                    "x": int(x),
+                    "y": int(y),
+                    "width": int(w),
+                    "height": int(h)
+                },
                 "preview": preview_filename,  # 添加预览文件名
                 "matches": matches
             })

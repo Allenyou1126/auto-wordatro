@@ -6,12 +6,12 @@ __pycache__/
 .Python
 .env
 
-src/uploads/*
-!src/uploads/.gitkeep
-src/capture/*
-!src/capture/.gitkeep
-src/results/*
-!src/results/.gitkeep
+uploads/*
+!uploads/.gitkeep
+capture/*
+!capture/.gitkeep
+results/*
+!results/.gitkeep
 
 # Logs
 logs
@@ -21,7 +21,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-pnpm-lock.yaml
+pnpm-*.yaml
 
 node_modules
 frontend
