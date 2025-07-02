@@ -147,6 +147,10 @@ def get_valid_regions(img, mask, min_area=2000):
     return valid_regions
 
 
+def inverse_color(color: tuple[int, int, int]) -> tuple[int, int, int]:
+    return 255 - color[0], 255 - color[1], 255 - color[2]
+
+
 def analyze(filename: str):
     # 确保模板目录存在
     for folder in CATEGORY_COLORS.keys():
@@ -187,9 +191,10 @@ def analyze(filename: str):
             else:  # Special
                 color = (75, 216, 253)   # BGR: #fdd84b
 
-            cv2.rectangle(debug_img, (x, y), (x + w, y + h), color, 2)
-            cv2.putText(debug_img, f"{category[:1]}-{i+1}", (x + 5, y + 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+            debug_img = cv2.rectangle(
+                debug_img, (x, y), (x + w, y + h), color, 8)
+            debug_img = cv2.putText(debug_img, f"{category[:1]}-{i+1}", (x + 5, y + 20),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, inverse_color(color), 2)
 
             # 保存区域预览图
             region_img = region["region"]

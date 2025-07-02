@@ -1,5 +1,5 @@
 import os
-from flask import Flask, redirect, send_from_directory
+from flask import Flask, abort, redirect, send_from_directory
 from flask_cors import CORS
 
 import routes
@@ -22,10 +22,17 @@ def create_app():
     app.register_blueprint(routes.api_bp)
     app.register_blueprint(routes.root_bp)
 
-    @app.errorhandler(404)
+    @app.route("/favicon.ico")
+    def favicon():
+        try:
+            return send_from_directory(FRONTEND_DIR, "favicon.ico")
+        except:
+            abort(404)
+
     @app.route("/")
     @app.route("/<path:path>")
-    def default_handler(e):
+    @app.errorhandler(404)
+    def default_handler(*args, **kvargs):
         return send_from_directory(FRONTEND_DIR, "index.html")
 
     return app
