@@ -8,7 +8,7 @@ from utils.path import ASSETS_DIR, FRONTEND_DIR, TEMPLATE_DIR, UPLOAD_DIR
 
 
 def create_app():
-    app = Flask(__name__, static_folder=ASSETS_DIR, static_url_path="/assets")
+    app = Flask(__name__)
 
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     os.makedirs(TEMPLATE_DIR, exist_ok=True)
@@ -26,6 +26,13 @@ def create_app():
     def favicon():
         try:
             return send_from_directory(FRONTEND_DIR, "favicon.ico")
+        except:
+            abort(404)
+
+    @app.route("/assets/<path:filename>")
+    def assets(filename):
+        try:
+            return send_from_directory(ASSETS_DIR, filename)
         except:
             abort(404)
 
