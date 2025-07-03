@@ -8,6 +8,7 @@ __pycache__/
 
 uploads/*
 !uploads/.gitkeep
+!uploads/example.png
 capture/*
 !capture/.gitkeep
 results/*

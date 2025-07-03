@@ -81,6 +81,10 @@ def find_all_matches(region_img, category):
         letter_name = letter.split('.')[0]
         if '_' in letter_name:
             letter_name = letter_name.split('_')[-1]
+            if letter_name == "exclamation":
+                letter_name = "!"
+            elif letter_name == "wildcard":
+                letter_name = "*"
 
         matches.append({
             "template": filename,
