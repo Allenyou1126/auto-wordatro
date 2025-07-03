@@ -33,7 +33,7 @@ export function HomePage() {
 								setFile(file);
 							}}
 							buttonText="Select Image"
-							tip="Upload an image file."
+							tip="Click or drop to upload an image file."
 							accept=".png,.jpg,.jpeg,.bmp"
 						/>
 					</CardWithTitle>
