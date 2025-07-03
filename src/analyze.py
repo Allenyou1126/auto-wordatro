@@ -184,17 +184,12 @@ def analyze(filename: str):
         for i, region in enumerate(regions):
             # 在调试图像上标记区域
             x, y, w, h = region["bbox"]
-            if category == "Regular":
-                color = (223, 235, 241)  # BGR: #f1ebdf
-            elif category == "Improved":
-                color = (137, 255, 186)  # BGR: #baff89
-            else:  # Special
-                color = (75, 216, 253)   # BGR: #fdd84b
+            color = (0, 0, 255)
 
             debug_img = cv2.rectangle(
-                debug_img, (x, y), (x + w, y + h), color, 8)
+                debug_img, (x, y), (x + w, y + h), color, 6)
             debug_img = cv2.putText(debug_img, f"{category[:1]}-{i+1}", (x + 5, y + 20),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, inverse_color(color), 2)
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
             # 保存区域预览图
             region_img = region["region"]

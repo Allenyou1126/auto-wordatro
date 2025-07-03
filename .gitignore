@@ -27,6 +27,7 @@ node_modules
 frontend/*
 !frontend/.gitkeep
 *.local
+frontend-src/package-lock.json
 
 # Editor directories and files
 .vscode/*
