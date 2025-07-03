@@ -223,7 +223,7 @@ export function DebugPage() {
 	if (isLoading) {
 		return <Loading />;
 	}
-	const res = data!;
+	const res = data!.debug_info;
 	return (
 		<Box sx={{ flexGrow: 1 }}>
 			<Grid container spacing={2}>

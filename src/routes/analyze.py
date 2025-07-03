@@ -4,6 +4,7 @@ from flask import Blueprint, request
 from analyze import analyze
 from utils import response
 from utils.logger import get_logger
+from word import get_words
 
 
 analyze_bp = Blueprint("analyze", __name__)
@@ -31,4 +32,6 @@ def analyze_file():
         logger.debug(f"Analysis failed for file: {filename}")
         return response.FILE_NOT_FOUND_RESPONSE
 
-    return response.build_response(analyze_result)
+    words_result = get_words(analyze_result)
+
+    return response.build_response({"original_image": filename, "debug_info": analyze_result, "words": words_result})

@@ -41,11 +41,19 @@ export type Result = {
 
 type CategoryName = "Regular" | "Improved" | "Special";
 
-type AnalyzeResponse = {
+type DebugInfo = {
 	original_image: string;
 	debug_image: string;
 	categories: {
 		[key in CategoryName]: Result[];
+	};
+};
+
+type AnalyzeResponse = {
+	original_image: string;
+	debug_info: DebugInfo;
+	words: {
+		[key: number]: string[];
 	};
 };
 
