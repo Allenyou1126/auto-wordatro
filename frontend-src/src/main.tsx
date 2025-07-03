@@ -6,6 +6,7 @@ import { SWRConfig } from "swr";
 import { api } from "./libs/api";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { HomePage } from "./pages/HomePage";
+import { DebugPage } from "./pages/DebugPage";
 import { AnalyzePage } from "./pages/AnalyzePage";
 import { ReactRouterAppProvider } from "@toolpad/core/react-router";
 import { DialogsProvider, NotificationsProvider } from "@toolpad/core";
@@ -57,6 +58,7 @@ createRoot(document.getElementById("root")!).render(
 								<Route path="/" element={<RootLayout />}>
 									<Route index element={<HomePage />} />
 									<Route path="/analyze/:filename" element={<AnalyzePage />} />
+									<Route path="/debug/:filename" element={<DebugPage />} />
 									<Route path="/404" element={<NotFoundPage />} />
 									<Route path="*" element={<NotFoundPage />} />
 								</Route>

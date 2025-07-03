@@ -1,5 +1,5 @@
 import axios from "axios";
-import useSWR from "swr";
+import useSWRImmutable from "swr/immutable";
 
 const isProd = import.meta.env.PROD === true;
 
@@ -67,15 +67,12 @@ export async function startAnalyze(
 }
 
 export function useAnalyze(filename?: string) {
-	return useSWR<AnalyzeResponse>(
+	return useSWRImmutable<AnalyzeResponse>(
 		{ filename, type: "analyze" },
 		async ({ filename }: { filename: string }) => {
 			return await startAnalyze(filename);
 		},
 		{
-			revalidateIfStale: false,
-			revalidateOnFocus: false,
-			revalidateOnReconnect: false,
 			shouldRetryOnError: false,
 		}
 	);
