@@ -93,7 +93,7 @@ def find_all_matches(region_img, category):
     return matches
 
 
-def find_colored_regions(img, target_colors_rgb, tolerance=10):
+def get_mask(img, target_colors_rgb, tolerance=10):
     """在图像中查找指定颜色区域并返回二值掩码（容差可调整）"""
 
     # 创建空白掩码
@@ -123,12 +123,13 @@ def find_colored_regions(img, target_colors_rgb, tolerance=10):
     return cleaned_mask
 
 
-def get_valid_regions(img, mask, min_area=2000):
+def get_valid_regions(img, mask, min_area=0.001, ar=(0, 1), udlr=(0, 0, 0, 0)):
     """从掩码中提取符合条件的区域"""
     num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(
         mask, connectivity=8)
 
     valid_regions = []
+    cur_label = 1
     for label in range(1, num_labels):  # 跳过背景标签0
         x = stats[label, cv2.CC_STAT_LEFT]
         y = stats[label, cv2.CC_STAT_TOP]
@@ -136,13 +137,34 @@ def get_valid_regions(img, mask, min_area=2000):
         h = stats[label, cv2.CC_STAT_HEIGHT]
         area = stats[label, cv2.CC_STAT_AREA]
 
-        if area >= min_area:
-            cropped_img = img[y:y+h, x:x+w].copy()
-            valid_regions.append({
-                "id": label,
-                "bbox": (x, y, w, h),
-                "region": cropped_img
-            })
+        if min_area is not None:
+            if 0 <= min_area <= 1:
+                min_area = int(min_area * img.shape[0] * img.shape[1])
+            if area < min_area:
+                continue
+        if ar is not None:
+            aspect_ratio = w / h if h > 0 else float('inf')
+            if not (ar[0] <= aspect_ratio <= ar[1]):
+                continue
+        if udlr is not None:
+            u, d, l, r = udlr
+            if 0 <= u <= 1:
+                u = int(u * img.shape[0])
+            if 0 <= d <= 1:
+                d = int(d * img.shape[0])
+            if 0 <= l <= 1:
+                l = int(l * img.shape[1])
+            if 0 <= r <= 1:
+                r = int(r * img.shape[1])
+            if not (y >= u and y + h <= img.shape[0] - d and
+                    x >= l and x + w <= img.shape[1] - r):
+                continue
+
+        valid_regions.append({
+            "id": cur_label,
+            "bbox": (x, y, w, h),
+        })
+        cur_label += 1
 
     return valid_regions
 
@@ -150,6 +172,18 @@ def get_valid_regions(img, mask, min_area=2000):
 def inverse_color(color: tuple[int, int, int]) -> tuple[int, int, int]:
     return 255 - color[0], 255 - color[1], 255 - color[2]
 
+def annotate_image(img, regions, color=(0, 0, 255), label=None):
+    """在图像上标记检测到的区域"""
+    for region in regions:
+        x, y, w, h = region["bbox"]
+        if label:
+            txt = f"{label}_{region['id']}"
+        else:
+            txt = region["id"]
+        img = cv2.rectangle(img, (x, y), (x + w, y + h), color, 6)
+        img = cv2.putText(img, txt, (x + 5, y + 20),
+                          cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+    return img
 
 def analyze(filename: str):
     # 确保模板目录存在
@@ -171,9 +205,12 @@ def analyze(filename: str):
 
     for category, colors in CATEGORY_COLORS.items():
         # 为该类别检测颜色区域
-        mask = find_colored_regions(img, colors, tolerance=10)
-        regions = get_valid_regions(img, mask, min_area=2000)
-        logger.info(f"{category}区域检测到 {len(regions)} 个有效区域")
+        mask = get_mask(img, colors, tolerance=10)
+        regions = get_valid_regions(img, mask, min_area=0.001, ar=(0.8, 1.2), udlr=(0.7, 0, 0, 0))
+        logger.info(f"{category} 检测到 {len(regions)} 个有效字母")
+
+        debug_img = annotate_image(
+            debug_img, regions, color=(0, 0, 255), label=category[:1])
 
         # 按区域面积从大到小排序
         regions.sort(key=lambda r: r["bbox"][2]
@@ -184,24 +221,13 @@ def analyze(filename: str):
         for i, region in enumerate(regions):
             # 在调试图像上标记区域
             x, y, w, h = region["bbox"]
-            color = (0, 0, 255)
-
-            debug_img = cv2.rectangle(
-                debug_img, (x, y), (x + w, y + h), color, 6)
-            debug_img = cv2.putText(debug_img, f"{category[:1]}-{i+1}", (x + 5, y + 20),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
             # 保存区域预览图
-            region_img = region["region"]
+            region_img = img[y:y + h, x:x + w]
             preview_filename = f"{os.path.splitext(filename)[0]}_{category[:1]}{i+1}.png"
             preview_path = os.path.join(
                 UPLOAD_DIR, preview_filename)
-
-            # 在黑色背景上显示区域内容
-            preview_img = np.zeros((h, w, 3), dtype=np.uint8)
-            preview_img[:region_img.shape[0],
-                        :region_img.shape[1]] = region_img
-            cv2.imwrite(preview_path, preview_img)
+            cv2.imwrite(preview_path, region_img)
 
             # 获取该区域所有匹配结果
             matches = find_all_matches(region_img, category)
@@ -221,6 +247,31 @@ def analyze(filename: str):
 
         all_results[category] = category_results
 
+    total_regions = sum(len(v) for v in all_results.values())
+    if total_regions < 10:
+        logger.warning(
+            f"检测到的总字母数量 ({total_regions}) 少于 10 个，可能需要调整参数或检查图像质量。")
+    else:
+        logger.info(f"总共检测到 {total_regions} 个字母")
+
+    white_mask = get_mask(img, [(255, 255, 255)], tolerance=10)
+    white_regions = get_valid_regions(img, white_mask, min_area=0.001, ar=(0.8, 1.2), udlr=(0.4, 0.3, 0.15, 0.15))
+
+    debug_img = annotate_image(
+        debug_img, white_regions, color=(255, 0, 0), label="W")
+
+    max_length = len(white_regions)
+    if max_length < 9:
+        logger.warning(
+            f"检测到的字母放置区域数量 ({max_length}) 少于 9 个，可能需要调整参数或检查图像质量。")
+        max_length = 9
+    elif max_length > 10:
+        logger.warning(
+            f"检测到的字母放置区域数量 ({max_length}) 超过 10 个，可能需要调整参数或检查图像质量。")
+        max_length = 10
+    else:
+        logger.info(f"检测到 {max_length} 个有效字母放置区域")
+
     # 保存调试图像
     debug_filename = f"debug_{filename}"
     debug_filepath = os.path.join(
@@ -230,5 +281,6 @@ def analyze(filename: str):
     return {
         "original_image": filename,
         "debug_image": debug_filename,
-        "categories": all_results
+        "categories": all_results,
+        "max_length": max_length
     }
