@@ -68,6 +68,7 @@ export function AnalyzePage() {
 			return { length: id, words: res.words[id] };
 		})
 		.filter((item) => item !== undefined)
+		.filter((item) => item!.words.length > 0)
 		.sort((a, b) => b.length - a.length);
 	return (
 		<Box sx={{ flexGrow: 1 }}>
