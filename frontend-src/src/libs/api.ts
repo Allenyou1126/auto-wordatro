@@ -1,5 +1,6 @@
 import axios from "axios";
-import useSWR from "swr";
+import { useCallback } from "react";
+import useSWR, { useSWRConfig } from "swr";
 import useSWRImmutable from "swr/immutable";
 
 const isProd = import.meta.env.PROD === true;
@@ -76,6 +77,18 @@ export async function startAnalyze(
 		);
 	}
 	return response.data.data;
+}
+
+export function useRefreshAnalyze() {
+	const { mutate } = useSWRConfig();
+	return useCallback(
+		(filename?: string, dictionary?: string | null) => {
+			mutate({ filename, type: "analyze", dictionary }, undefined, {
+				revalidate: true,
+			});
+		},
+		[mutate]
+	);
 }
 
 type DictionariesResponse = {
