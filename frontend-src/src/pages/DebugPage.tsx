@@ -1,9 +1,4 @@
-import {
-	createPath,
-	useNavigate,
-	useParams,
-	useSearchParams,
-} from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import {
 	getUploadedFileUrl,
 	useAnalyze,
@@ -300,12 +295,10 @@ export function DebugPage() {
 							<Button
 								variant="contained"
 								onClick={() => {
-									navigate(
-										createPath({
-											pathname: `/analyze/${filename}`,
-											search: searchParams.toString(),
-										})
-									);
+									navigate({
+										pathname: `/analyze/${filename}`,
+										search: searchParams.toString(),
+									});
 								}}>
 								Back To Analyze Page
 							</Button>

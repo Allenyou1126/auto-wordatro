@@ -1,10 +1,5 @@
-import {
-	createPath,
-	useNavigate,
-	useParams,
-	useSearchParams,
-} from "react-router";
-import { getUploadedFileUrl, useAnalyze } from "../libs/api";
+import { useNavigate, useParams, useSearchParams } from "react-router";
+import { getUploadedFileUrl, useAnalyze, useDictionaries } from "../libs/api";
 import { useNotifications } from "@toolpad/core";
 import {
 	Accordion,
@@ -12,14 +7,20 @@ import {
 	AccordionSummary,
 	Box,
 	Button,
+	FormControl,
+	FormHelperText,
 	Grid,
+	InputLabel,
+	MenuItem,
+	Select,
 	Stack,
 	Typography,
 } from "@mui/material";
 import CardWithTitle from "../components/CardWithTitle";
-import { Error } from "../components/Error";
+import { Error as ErrorDisplay } from "../components/Error";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Loading from "../components/Loading";
+import { useState } from "react";
 
 function WordItem({ length, words }: { length: number; words: string[] }) {
 	return (
@@ -42,21 +43,38 @@ export function AnalyzePage() {
 	const { filename } = useParams();
 	const [searchParams] = useSearchParams();
 	const dictionary = searchParams.get("dictionary");
+	console.log(dictionary);
 	const { data, error, isLoading, mutate } = useAnalyze(filename, dictionary);
-	if (error) {
-		console.log(error);
-		notification.show(error.message, { severity: "error" });
+	const [dictionaryToUse, setDictionary] = useState<string>(dictionary ?? "");
+	const {
+		data: dictionariesData,
+		isLoading: isLoadingDictionaries,
+		error: dictionariesError,
+	} = useDictionaries();
+	if (error || dictionariesError) {
+		console.log(error ?? dictionariesError);
+		notification.show(error?.message ?? dictionariesError.message, {
+			severity: "error",
+		});
 		return (
-			<Error
-				error={error}
+			<ErrorDisplay
+				error={error ?? dictionariesError}
 				retry={() => {
 					mutate();
 				}}
 			/>
 		);
 	}
-	if (isLoading) {
+	if (!data || !dictionariesData || isLoading || isLoadingDictionaries) {
 		return <Loading />;
+	}
+	console.log(dictionariesData.data.dictionaries);
+	if (!dictionariesData.data.dictionaries.includes(dictionary ?? "")) {
+		notification.show(
+			`Dictionary "${dictionary}" is not available. Please select a valid dictionary.`,
+			{ severity: "error" }
+		);
+		return <ErrorDisplay error={new Error("Invalid dictionary selected.")} />;
 	}
 	const res = data!;
 	const words = Object.keys(res.words)
@@ -81,26 +99,68 @@ export function AnalyzePage() {
 				<Grid size={6} container direction="column">
 					<Grid size={12} sx={{ width: "100%" }}>
 						<CardWithTitle title="Operations">
-							<Stack direction="row" spacing={2}>
-								<Button
-									variant="contained"
-									onClick={() => {
-										navigate("/");
-									}}>
-									Back To Home
-								</Button>
-								<Button
-									variant="contained"
-									onClick={() => {
-										navigate(
-											createPath({
+							<Stack
+								direction="column"
+								spacing={2}
+								sx={{ alignItems: "start" }}>
+								<FormControl fullWidth>
+									<InputLabel id="dictionary-select-label">
+										Dictionary
+									</InputLabel>
+									<Select
+										label="Dictionary"
+										labelId="dictionary-select-label"
+										id="dictionary-select"
+										value={dictionaryToUse}
+										onChange={(e) => {
+											setDictionary(e.target.value as string);
+										}}>
+										{dictionariesData?.data.dictionaries.map((dict) => {
+											return (
+												<MenuItem key={dict} value={dict}>
+													{dict}
+												</MenuItem>
+											);
+										})}
+									</Select>
+									<FormHelperText>
+										Select a dictionary for analysis.
+									</FormHelperText>
+								</FormControl>
+								<Stack direction="row" spacing={2}>
+									<Button
+										variant="contained"
+										onClick={() => {
+											navigate("/");
+										}}>
+										Back To Home
+									</Button>
+									<Button
+										variant="contained"
+										onClick={() => {
+											navigate({
 												pathname: `/debug/${filename}`,
 												search: searchParams.toString(),
-											})
-										);
-									}}>
-									Inspect Debug Image
-								</Button>
+											});
+										}}>
+										Inspect Debug Image
+									</Button>
+									<Button
+										variant="contained"
+										onClick={() => {
+											if (dictionaryToUse !== dictionary) {
+												navigate({
+													pathname: `/analyze/${filename}`,
+													search: new URLSearchParams({
+														dictionary: dictionaryToUse,
+													}).toString(),
+												});
+											}
+											mutate(undefined, { revalidate: true });
+										}}>
+										Re-run Analyze
+									</Button>
+								</Stack>
 							</Stack>
 						</CardWithTitle>
 					</Grid>
@@ -139,7 +199,7 @@ export function AnalyzePage() {
 				</Grid>
 				<Grid size={12}>
 					<CardWithTitle title="Available Words">
-						<Box sx={{ width: "100%" }}>
+						<Stack sx={{ width: "100%" }}>
 							{words.map((item) => {
 								return (
 									<WordItem
@@ -149,7 +209,7 @@ export function AnalyzePage() {
 									/>
 								);
 							})}
-						</Box>
+						</Stack>
 					</CardWithTitle>
 				</Grid>
 			</Grid>
