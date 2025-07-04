@@ -72,25 +72,55 @@ export function AnalyzePage() {
 						<img width="100%" src={getUploadedFileUrl(res.original_image)} />
 					</CardWithTitle>
 				</Grid>
-				<Grid size={6}>
-					<CardWithTitle title="Operations">
-						<Stack direction="row" spacing={2}>
-							<Button
-								variant="contained"
-								onClick={() => {
-									navigate("/");
-								}}>
-								Back To Home
-							</Button>
-							<Button
-								variant="contained"
-								onClick={() => {
-									navigate(`/debug/${filename}`);
-								}}>
-								Inspect Debug Image
-							</Button>
-						</Stack>
-					</CardWithTitle>
+				<Grid size={6} container direction="column">
+					<Grid size={12} sx={{ width: "100%" }}>
+						<CardWithTitle title="Operations">
+							<Stack direction="row" spacing={2}>
+								<Button
+									variant="contained"
+									onClick={() => {
+										navigate("/");
+									}}>
+									Back To Home
+								</Button>
+								<Button
+									variant="contained"
+									onClick={() => {
+										navigate(`/debug/${filename}`);
+									}}>
+									Inspect Debug Image
+								</Button>
+							</Stack>
+						</CardWithTitle>
+					</Grid>
+					<Grid size={12} sx={{ width: "100%", flexGrow: "1" }}>
+						<CardWithTitle title="Analyze Results">
+							<Typography fontWeight="700" variant="subtitle1">
+								Regular:
+							</Typography>
+							<Typography>
+								{res.debug_info.categories.Regular.map(
+									(item) => item.matches.at(0)?.letter
+								).join(" ")}
+							</Typography>
+							<Typography fontWeight="700	" variant="subtitle1">
+								Improved:
+							</Typography>
+							<Typography>
+								{res.debug_info.categories.Improved.map(
+									(item) => item.matches.at(0)?.letter
+								).join(" ")}
+							</Typography>
+							<Typography fontWeight="700	" variant="subtitle1">
+								Special:
+							</Typography>
+							<Typography>
+								{res.debug_info.categories.Special.map(
+									(item) => item.matches.at(0)?.letter
+								).join(" ")}
+							</Typography>
+						</CardWithTitle>
+					</Grid>
 				</Grid>
 				<Grid size={12}>
 					<CardWithTitle title="Available Words">
