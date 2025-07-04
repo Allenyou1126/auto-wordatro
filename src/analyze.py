@@ -269,10 +269,6 @@ def analyze(filename: str):
         logger.warning(
             f"检测到的字母放置区域数量 ({max_length}) 少于 9 个，可能需要调整参数或检查图像质量。")
         max_length = 9
-    elif max_length > 10:
-        logger.warning(
-            f"检测到的字母放置区域数量 ({max_length}) 超过 10 个，可能需要调整参数或检查图像质量。")
-        max_length = 10
     else:
         logger.info(f"检测到 {max_length} 个有效字母放置区域")
 
