@@ -59,7 +59,7 @@ def req_qat(pat, dict="YAWL"):
     return parse_html(response.content)
 
 
-def get_words(analyze_result):
+def get_words(analyze_result, dictionary="YAWL"):
     max_length = analyze_result.get('max_length', 9)
     categories = analyze_result.get('categories', {})
 
@@ -80,7 +80,7 @@ def get_words(analyze_result):
         pat = f'{length}:*/' + \
             ''.join(letters).replace("*", ".").replace("!", ".").lower()
         try:
-            words = req_qat(pat)
+            words = req_qat(pat, dict=dictionary)
             if length in words:
                 results[length] += words[length]
         except Exception as e:
