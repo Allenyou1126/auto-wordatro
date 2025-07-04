@@ -10,18 +10,26 @@ import { DebugPage } from "./pages/DebugPage";
 import { AnalyzePage } from "./pages/AnalyzePage";
 import { ReactRouterAppProvider } from "@toolpad/core/react-router";
 import { DialogsProvider, NotificationsProvider } from "@toolpad/core";
-import { createTheme } from "@mui/material";
+import { createTheme, CssBaseline } from "@mui/material";
 
 const lightTheme = createTheme({
 	palette: {
 		mode: "light",
-		background: {},
+	},
+	components: {
+		MuiCssBaseline: {
+			styleOverrides: `@font-face { font-family: "Cascadia Mono";	font-style: normal;	font-display: swap;	src: local("Cascadia Mono"), url("/CascadiaMono.woff2") format("woff2"); } @font-face { font-family: "Cascadia Mono"; font-style: italic; font-display: swap; src: local("Cascadia Mono"), url("/CascadiaMonoItalic.woff2") format("woff2"); }`,
+		},
 	},
 });
 const darkTheme = createTheme({
 	palette: {
 		mode: "dark",
-		background: {},
+	},
+	components: {
+		MuiCssBaseline: {
+			styleOverrides: `@font-face { font-family: "Cascadia Mono";	font-style: normal;	font-display: swap;	src: local("Cascadia Mono"), url("/CascadiaMono.woff2") format("woff2"); } @font-face { font-family: "Cascadia Mono"; font-style: italic; font-display: swap; src: local("Cascadia Mono"), url("/CascadiaMonoItalic.woff2") format("woff2"); }`,
+		},
 	},
 });
 
@@ -44,6 +52,7 @@ createRoot(document.getElementById("root")!).render(
 						light: lightTheme,
 						dark: darkTheme,
 					}}>
+					<CssBaseline />
 					<NotificationsProvider
 						slotProps={{
 							snackbar: {

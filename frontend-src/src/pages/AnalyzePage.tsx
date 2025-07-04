@@ -1,20 +1,38 @@
 import { useNavigate, useParams } from "react-router";
 import { getUploadedFileUrl, useAnalyze } from "../libs/api";
 import { useNotifications } from "@toolpad/core";
-import { Box, Button, Grid, Stack } from "@mui/material";
+import {
+	Accordion,
+	AccordionDetails,
+	AccordionSummary,
+	Box,
+	Button,
+	Grid,
+	Stack,
+	Typography,
+} from "@mui/material";
 import CardWithTitle from "../components/CardWithTitle";
 import { Error } from "../components/Error";
-import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 function Loading() {
 	return <></>;
 }
 
-const wordColumns: GridColDef[] = [
-	{ field: "id", headerName: "ID", width: 90, type: "number" },
-	{ field: "length", headerName: "Length", width: 150, type: "number" },
-	{ field: "word", headerName: "Word", width: 250 },
-];
+function WordItem({ length, words }: { length: number; words: string[] }) {
+	return (
+		<Accordion>
+			<AccordionSummary expandIcon={<ExpandMoreIcon />}>
+				<Typography>Length {length}</Typography>
+			</AccordionSummary>
+			<AccordionDetails>
+				<Typography sx={{ fontFamily: "'Cascadia Mono', monospace" }}>
+					{words.join(", ")}
+				</Typography>
+			</AccordionDetails>
+		</Accordion>
+	);
+}
 
 export function AnalyzePage() {
 	const notification = useNotifications();
@@ -41,20 +59,11 @@ export function AnalyzePage() {
 		.map((key) => {
 			const id = parseInt(key);
 			if (isNaN(id)) {
-				return [];
+				return undefined;
 			}
-			return res.words[id].map((word) => {
-				return {
-					length: id,
-					word: word,
-				};
-			});
+			return { length: id, words: res.words[id] };
 		})
-		.flat()
-		.map((word, index) => ({
-			id: index + 1,
-			...word,
-		}));
+		.filter((item) => item !== undefined);
 	return (
 		<Box sx={{ flexGrow: 1 }}>
 			<Grid container spacing={2}>
@@ -64,31 +73,6 @@ export function AnalyzePage() {
 					</CardWithTitle>
 				</Grid>
 				<Grid size={6}>
-					<CardWithTitle title="Available Words">
-						<Box sx={{ height: "370px" }}>
-							<DataGrid
-								disableColumnResize
-								disableColumnSelector
-								disableAutosize
-								disableRowSelectionOnClick
-								disableDensitySelector
-								disableMultipleRowSelection
-								disableVirtualization
-								pageSizeOptions={[5]}
-								initialState={{
-									pagination: {
-										paginationModel: {
-											pageSize: 5,
-										},
-									},
-								}}
-								rows={words}
-								columns={wordColumns}
-							/>
-						</Box>
-					</CardWithTitle>
-				</Grid>
-				<Grid size={12}>
 					<CardWithTitle title="Operations">
 						<Stack direction="row" spacing={2}>
 							<Button
@@ -106,6 +90,21 @@ export function AnalyzePage() {
 								Inspect Debug Image
 							</Button>
 						</Stack>
+					</CardWithTitle>
+				</Grid>
+				<Grid size={12}>
+					<CardWithTitle title="Available Words">
+						<Box sx={{ width: "100%" }}>
+							{words.map((item) => {
+								return (
+									<WordItem
+										key={item.length}
+										length={item.length}
+										words={item.words}
+									/>
+								);
+							})}
+						</Box>
 					</CardWithTitle>
 				</Grid>
 			</Grid>

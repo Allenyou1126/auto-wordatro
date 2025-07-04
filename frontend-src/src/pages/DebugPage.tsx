@@ -283,7 +283,7 @@ export function DebugPage() {
 				<RegionCard region={res.categories.Regular} name="Regular" />
 				<RegionCard region={res.categories.Improved} name="Improved" />
 				<RegionCard region={res.categories.Special} name="Special" />
-				<Grid size={12}>
+				<Grid size={6}>
 					<CardWithTitle title="Operations">
 						<Stack direction="row" spacing={2}>
 							<Button
