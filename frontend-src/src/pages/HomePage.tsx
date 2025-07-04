@@ -85,37 +85,37 @@ export function HomePage() {
 					</CardWithTitle>
 				</Grid>
 				<Grid size={4}>
-					<CardWithTitle title="Options">
-						<FormControl fullWidth>
-							<InputLabel id="dictionary-select-label">Dictionary</InputLabel>
-							<Select
-								label="Dictionary"
-								labelId="dictionary-select-label"
-								id="dictionary-select"
-								value={dictionary ?? ""}
-								onChange={(e) => {
-									setDictionary(e.target.value as string);
-								}}>
-								{dictionaries.map((dict) => {
-									return (
-										<MenuItem key={dict} value={dict}>
-											{dict}
-										</MenuItem>
-									);
-								})}
-							</Select>
-							<FormHelperText>Select a dictionary for analysis.</FormHelperText>
-						</FormControl>
-					</CardWithTitle>
-				</Grid>
-				<Grid size={12}>
-					<CardWithTitle title="Operations">
-						<Button
-							onClick={submit}
-							disabled={file === null || dictionary === ""}
-							variant="contained">
-							Start Analyze
-						</Button>
+					<CardWithTitle title="Options & Operations">
+						<Stack direction="column" spacing={2} sx={{ alignItems: "start" }}>
+							<FormControl fullWidth>
+								<InputLabel id="dictionary-select-label">Dictionary</InputLabel>
+								<Select
+									label="Dictionary"
+									labelId="dictionary-select-label"
+									id="dictionary-select"
+									value={dictionary ?? ""}
+									onChange={(e) => {
+										setDictionary(e.target.value as string);
+									}}>
+									{dictionaries.map((dict) => {
+										return (
+											<MenuItem key={dict} value={dict}>
+												{dict}
+											</MenuItem>
+										);
+									})}
+								</Select>
+								<FormHelperText>
+									Select a dictionary for analysis.
+								</FormHelperText>
+							</FormControl>
+							<Button
+								onClick={submit}
+								disabled={file === null || dictionary === ""}
+								variant="contained">
+								Start Analyze
+							</Button>
+						</Stack>
 					</CardWithTitle>
 				</Grid>
 			</Grid>
