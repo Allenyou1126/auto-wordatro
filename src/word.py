@@ -3,6 +3,10 @@ from bs4 import BeautifulSoup
 from bs4.element import NavigableString
 from retry import retry
 
+from utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 QAT_DICTIONARIES = ["UKACD", "YAWL", "ABLE",
                     "Moby", "PDL", "BNC", "Broda", "Union"]
 
@@ -43,6 +47,7 @@ def parse_html(html_content):
 
 @retry(tries=3, delay=1)
 def req_qat(pat, dict="YAWL"):
+    logger.debug(f"Requesting QAT with pattern: {pat}, dictionary: {dict}")
     pat = pat.replace(":", "%3A")
     pat = pat.replace("/", "%2F")
     if isinstance(dict, str):
@@ -77,7 +82,7 @@ def get_words(analyze_result, dictionary="YAWL"):
         if length not in results:
             results[length] = []
         pat = f'{length}:*/' + \
-            ''.join(letters).replace("*", ".").replace("!", ".").lower()
+            ''.join(letters).replace("*", ".").replace("!", "").lower()
         try:
             words = req_qat(pat, dict=dictionary)
             if length in words:
