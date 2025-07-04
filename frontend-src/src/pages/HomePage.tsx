@@ -8,20 +8,21 @@ import {
 	Select,
 	FormHelperText,
 	MenuItem,
+	Stack,
 } from "@mui/material";
 import CardWithTitle from "../components/CardWithTitle";
 import FileUpload from "../components/FileUpload";
 import { useCallback, useState } from "react";
 import { uploadFile, useDictionaries, useRefreshAnalyze } from "../libs/api";
-import { createPath, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import Loading from "../components/Loading";
 import { Error } from "../components/Error";
 
 export function HomePage() {
 	const [file, setFile] = useState<File | null>(null);
 	const navigate = useNavigate();
-	const [dictionary, setDictionary] = useState<string>("");
 	const { data, isLoading, error, mutate } = useDictionaries();
+	const [dictionary, setDictionary] = useState<string>("YAWL");
 	const refresh = useRefreshAnalyze();
 	const submit = useCallback(() => {
 		if (file === null) {
