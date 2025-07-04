@@ -48,6 +48,7 @@ type DebugInfo = {
 	categories: {
 		[key in CategoryName]: Result[];
 	};
+	max_length: number;
 };
 
 type AnalyzeResponse = {

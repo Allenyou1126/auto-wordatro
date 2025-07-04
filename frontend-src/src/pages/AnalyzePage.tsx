@@ -129,6 +129,10 @@ export function AnalyzePage() {
 									(item) => item.matches.at(0)?.letter
 								).join(" ")}
 							</Typography>
+							<Typography fontWeight="700	" variant="subtitle1">
+								Max Length:
+							</Typography>
+							<Typography>{res.debug_info.max_length}</Typography>
 						</CardWithTitle>
 					</Grid>
 				</Grid>
