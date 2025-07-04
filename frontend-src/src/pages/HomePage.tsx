@@ -1,21 +1,67 @@
-import { Grid, Box, Button, Typography } from "@mui/material";
+import {
+	Grid,
+	Box,
+	Button,
+	Typography,
+	FormControl,
+	InputLabel,
+	Select,
+	FormHelperText,
+	MenuItem,
+} from "@mui/material";
 import CardWithTitle from "../components/CardWithTitle";
 import FileUpload from "../components/FileUpload";
 import { useCallback, useState } from "react";
-import { uploadFile } from "../libs/api";
-import { useNavigate } from "react-router";
+import { uploadFile, useDictionaries } from "../libs/api";
+import { createPath, useNavigate } from "react-router";
+import Loading from "../components/Loading";
+import { Error } from "../components/Error";
 
 export function HomePage() {
 	const [file, setFile] = useState<File | null>(null);
 	const navigate = useNavigate();
+	const [dictionary, setDictionary] = useState<string>("");
+	const { data, isLoading, error, mutate } = useDictionaries();
 	const submit = useCallback(() => {
 		if (file === null) {
+			console.error("No file selected.");
+			return;
+		}
+		if (dictionary === "") {
+			console.error("No dictionary selected.");
+			return;
+		}
+		if (!(data?.data?.dictionaries ?? []).includes(dictionary)) {
+			console.error(
+				"Invalid dictionary selected.",
+				dictionary,
+				data?.data?.dictionaries
+			);
 			return;
 		}
 		uploadFile(file).then((res) => {
-			navigate(`/analyze/${res.filename}`);
+			navigate(
+				createPath({
+					pathname: `/analyze/${res.filename}`,
+					search: new URLSearchParams({ dictionary }).toString(),
+				})
+			);
 		});
-	}, [file, navigate]);
+	}, [data?.data?.dictionaries, dictionary, file, navigate]);
+	if (isLoading) {
+		return <Loading />;
+	}
+	if (error) {
+		return (
+			<Error
+				error={error}
+				retry={() => {
+					mutate();
+				}}
+			/>
+		);
+	}
+	const dictionaries = data!.data.dictionaries;
 	return (
 		<Box sx={{ flexGrow: 1 }}>
 			<Grid container spacing={2}>
@@ -38,11 +84,35 @@ export function HomePage() {
 						/>
 					</CardWithTitle>
 				</Grid>
+				<Grid size={4}>
+					<CardWithTitle title="Options">
+						<FormControl fullWidth>
+							<InputLabel id="dictionary-select-label">Dictionary</InputLabel>
+							<Select
+								label="Dictionary"
+								labelId="dictionary-select-label"
+								id="dictionary-select"
+								value={dictionary ?? ""}
+								onChange={(e) => {
+									setDictionary(e.target.value as string);
+								}}>
+								{dictionaries.map((dict) => {
+									return (
+										<MenuItem key={dict} value={dict}>
+											{dict}
+										</MenuItem>
+									);
+								})}
+							</Select>
+							<FormHelperText>Select a dictionary for analysis.</FormHelperText>
+						</FormControl>
+					</CardWithTitle>
+				</Grid>
 				<Grid size={12}>
 					<CardWithTitle title="Operations">
 						<Button
 							onClick={submit}
-							disabled={file === null}
+							disabled={file === null || dictionary === ""}
 							variant="contained">
 							Start Analyze
 						</Button>

@@ -1,4 +1,9 @@
-import { useNavigate, useParams } from "react-router";
+import {
+	createPath,
+	useNavigate,
+	useParams,
+	useSearchParams,
+} from "react-router";
 import { getUploadedFileUrl, useAnalyze } from "../libs/api";
 import { useNotifications } from "@toolpad/core";
 import {
@@ -14,10 +19,7 @@ import {
 import CardWithTitle from "../components/CardWithTitle";
 import { Error } from "../components/Error";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-
-function Loading() {
-	return <></>;
-}
+import Loading from "../components/Loading";
 
 function WordItem({ length, words }: { length: number; words: string[] }) {
 	return (
@@ -38,7 +40,9 @@ export function AnalyzePage() {
 	const notification = useNotifications();
 	const navigate = useNavigate();
 	const { filename } = useParams();
-	const { data, error, isLoading, mutate } = useAnalyze(filename);
+	const [searchParams] = useSearchParams();
+	const dictionary = searchParams.get("dictionary");
+	const { data, error, isLoading, mutate } = useAnalyze(filename, dictionary);
 	if (error) {
 		console.log(error);
 		notification.show(error.message, { severity: "error" });
@@ -86,7 +90,12 @@ export function AnalyzePage() {
 								<Button
 									variant="contained"
 									onClick={() => {
-										navigate(`/debug/${filename}`);
+										navigate(
+											createPath({
+												pathname: `/debug/${filename}`,
+												search: searchParams.toString(),
+											})
+										);
 									}}>
 									Inspect Debug Image
 								</Button>

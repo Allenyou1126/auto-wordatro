@@ -1,4 +1,9 @@
-import { useNavigate, useParams } from "react-router";
+import {
+	createPath,
+	useNavigate,
+	useParams,
+	useSearchParams,
+} from "react-router";
 import {
 	getUploadedFileUrl,
 	useAnalyze,
@@ -20,10 +25,7 @@ import {
 import CardWithTitle from "../components/CardWithTitle";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import { Error } from "../components/Error";
-
-function Loading() {
-	return <></>;
-}
+import Loading from "../components/Loading";
 
 function PreviewDialog({
 	payload,
@@ -207,7 +209,9 @@ export function DebugPage() {
 	const notification = useNotifications();
 	const navigate = useNavigate();
 	const { filename } = useParams();
-	const { data, error, isLoading, mutate } = useAnalyze(filename);
+	const [searchParams] = useSearchParams();
+	const dictionary = searchParams.get("dictionary");
+	const { data, error, isLoading, mutate } = useAnalyze(filename, dictionary);
 	if (error) {
 		console.log(error);
 		notification.show(error.message, { severity: "error" });
@@ -296,7 +300,12 @@ export function DebugPage() {
 							<Button
 								variant="contained"
 								onClick={() => {
-									navigate(`/analyze/${filename}`);
+									navigate(
+										createPath({
+											pathname: `/analyze/${filename}`,
+											search: searchParams.toString(),
+										})
+									);
 								}}>
 								Back To Analyze Page
 							</Button>

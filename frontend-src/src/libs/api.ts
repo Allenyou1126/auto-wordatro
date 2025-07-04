@@ -1,4 +1,5 @@
 import axios from "axios";
+import useSWR from "swr";
 import useSWRImmutable from "swr/immutable";
 
 const isProd = import.meta.env.PROD === true;
@@ -58,13 +59,15 @@ type AnalyzeResponse = {
 };
 
 export async function startAnalyze(
-	filename?: string
+	filename?: string,
+	dictionary?: string | null
 ): Promise<AnalyzeResponse> {
 	if (!filename) {
 		throw new Error("Filename is required for analysis.");
 	}
 	const response = await api.post<ApiResponse<AnalyzeResponse>>("/analyze", {
 		filename,
+		dictionary: dictionary ?? undefined,
 	});
 	if (response.status !== 200 || response.data.code !== 0) {
 		throw new Error(
@@ -74,11 +77,25 @@ export async function startAnalyze(
 	return response.data.data;
 }
 
-export function useAnalyze(filename?: string) {
+type DictionariesResponse = {
+	dictionaries: string[];
+};
+
+export function useDictionaries() {
+	return useSWR<ApiResponse<DictionariesResponse>>("/dictionaries");
+}
+
+export function useAnalyze(filename?: string, dictionary?: string | null) {
 	return useSWRImmutable<AnalyzeResponse>(
-		{ filename, type: "analyze" },
-		async ({ filename }: { filename: string }) => {
-			return await startAnalyze(filename);
+		{ filename, type: "analyze", dictionary },
+		async ({
+			filename,
+			dictionary,
+		}: {
+			filename: string;
+			dictionary: string | null;
+		}) => {
+			return await startAnalyze(filename, dictionary);
 		},
 		{
 			shouldRetryOnError: false,
