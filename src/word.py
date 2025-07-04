@@ -46,7 +46,6 @@ def req_qat(pat, dict="YAWL"):
     pat = pat.replace(":", "%3A")
     pat = pat.replace("/", "%2F")
     if isinstance(dict, str):
-        dict = dict.upper()
         if dict not in QAT_DICTIONARIES:
             raise ValueError(
                 f"Dictionary '{dict}' is not supported. Choose from {QAT_DICTIONARIES}.")
