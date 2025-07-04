@@ -67,7 +67,8 @@ export function AnalyzePage() {
 			}
 			return { length: id, words: res.words[id] };
 		})
-		.filter((item) => item !== undefined);
+		.filter((item) => item !== undefined)
+		.sort((a, b) => b.length - a.length);
 	return (
 		<Box sx={{ flexGrow: 1 }}>
 			<Grid container spacing={2}>
