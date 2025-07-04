@@ -127,7 +127,7 @@ def get_mask(img, target_colors_rgb, tolerance=10):
     return cleaned_mask
 
 
-def get_valid_regions(img, mask, min_area=0.001, ar=(0, 1), udlr=(0, 0, 0, 0)):
+def get_valid_regions(img, mask, min_area=0.001, ar=None, udlr=(0, 0, 0, 0)):
     """从掩码中提取符合条件的区域"""
     num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(
         mask, connectivity=8)

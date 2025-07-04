@@ -9,7 +9,7 @@ import time
 import datetime
 import os
 
-from analyze import find_colored_regions, get_valid_regions
+from analyze import get_mask, get_valid_regions
 
 
 def get_window_rect(window_title):
@@ -86,12 +86,6 @@ def capture_screen_region(rect):
 def main():
     window_title = "Wordatro!"
 
-    # 可调整参数区域
-    # ------------------------------
-    tolerance = 10  # 颜色检测容差（0-100）
-    min_area = 2000  # 最小区域面积（像素）
-    # ------------------------------
-
     try:
         hwnd, rect = get_window_rect(window_title)
         left, top, right, bottom = rect
@@ -125,18 +119,18 @@ def main():
         (255, 250, 156),  # #fffa9c
         (254, 254, 202)   # #fefeca
     ]
-    mask = find_colored_regions(img, target_colors_rgb, tolerance=tolerance)
+    mask = get_mask(img, target_colors_rgb)
 
     # 创建原始图像的副本用于调试
-    debug_img = img.copy()
+    # debug_img = img.copy()
 
     # 使用connectedComponents获取连通分量
-    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(
-        mask, connectivity=8)
-    print(f"检测到 {num_labels - 1} 个连通分量")  # 减去背景标签
+    # num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(
+    #     mask, connectivity=8)
+    # print(f"检测到 {num_labels - 1} 个连通分量")  # 减去背景标签
 
-    valid_regions = get_valid_regions(img, mask, min_area=min_area)
-    print(f"找到 {len(valid_regions)} 个符合条件的彩色区域（容差={tolerance}，最小面积={min_area}）")
+    valid_regions = get_valid_regions(img, mask)
+    print(f"找到 {len(valid_regions)} 个符合条件的彩色区域")
 
     # 保存调试图像
     # cv2.imwrite(f"{output_dir}/multicolor_mask_tolerance{tolerance}.jpg", mask)
@@ -146,7 +140,8 @@ def main():
     for region_info in valid_regions:
         timestr = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         region_id = region_info["id"]
-        region_img = region_info["region"]
+        x, y, w, h = region_info["bbox"]
+        region_img = img[y:y + h, x:x + w]
 
         # 确保区域具有合理尺寸
         if region_img.shape[0] > 0 and region_img.shape[1] > 0:
