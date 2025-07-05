@@ -80,6 +80,7 @@ def find_all_matches(region_img, category):
         # 提取字母名称（移除前缀和后缀）
         letter_name = letter.split('.')[0]
         if '_' in letter_name:
+            font = letter_name.split('_')[0]
             letter_name = letter_name.split('_')[-1]
             if letter_name == "exclamation":
                 letter_name = "!"
@@ -89,7 +90,8 @@ def find_all_matches(region_img, category):
         matches.append({
             "template": filename,
             "score": score,
-            "letter": letter_name
+            "letter": letter_name,
+            "font": font
         })
 
     # 按相似度从高到低排序
