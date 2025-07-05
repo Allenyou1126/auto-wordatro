@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
 from retry import retry
+import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
 
 from utils.logger import get_logger
 
@@ -67,7 +69,6 @@ def get_words(analyze_result, dictionary="YAWL"):
     max_length = analyze_result.get('max_length', 9)
     categories = analyze_result.get('categories', {})
 
-    # TODO: 目前只是简单策略，需要补充更详细策略
     letters = []
     for category, items in categories.items():
         for item in items:
@@ -75,20 +76,31 @@ def get_words(analyze_result, dictionary="YAWL"):
                 letter = item['matches'][0]['letter']
                 letters.append(letter)
 
+    # 初始化结果字典
     results = {}
-    for length in range(max_length, 0, -1):
-        if length < 5 and sum([len(v) for v in results.values()]) > 0:
-            break
-        if length not in results:
-            results[length] = []
-        pat = f'{length}:*/' + \
-            ''.join(letters).replace("*", ".").replace("!", "").lower()
+
+    # 辅助函数：为单个长度请求单词
+    def _request_words_for_length(l):
         try:
+            # 检查是否已有结果且不再需要短词
+            # if l < 5 and any(results.values()):
+                # return l, []  # 跳过短词
+            
+            pat = f'{l}:*/' + ''.join(letters).replace("*", ".").replace("!", "").lower()
             words = req_qat(pat, dict=dictionary)
-            if length in words:
-                results[length] += words[length]
+            return l, words.get(l, [])
         except Exception as e:
-            print(f"Error fetching words for pattern '{pat}': {e}")
+            logger.error(f"Error fetching words for length {l}: {e}")
+            return l, []
+
+    # 使用线程池并行处理
+    lengths = list(range(max_length, 0, -1))
+    with ThreadPoolExecutor(max_workers=min(5, len(lengths))) as executor:  # 限制最大线程数
+        futures = [executor.submit(_request_words_for_length, l) for l in lengths]
+        
+        for future in concurrent.futures.as_completed(futures):
+            l, word_list = future.result()
+            results[l] = word_list
 
     return results
 
