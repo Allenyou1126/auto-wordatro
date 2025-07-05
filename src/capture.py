@@ -1,3 +1,4 @@
+import ctypes  # 添加新模块
 import cv2
 import numpy as np
 from PIL import Image
@@ -11,9 +12,14 @@ import os
 
 from analyze import get_mask, get_valid_regions
 
+# 添加DPI感知设置（必须在程序开头调用）
+try:
+    ctypes.windll.user32.SetProcessDPIAware()
+except:
+    pass  # 如果调用失败则忽略
 
 def get_window_rect(window_title):
-    """获取指定窗口的坐标和尺寸（支持多显示器）"""
+    """获取指定窗口的坐标和尺寸（支持多显示器和高DPI缩放）"""
     hwnd = win32gui.FindWindow(None, window_title)
     if not hwnd:
         raise Exception(f"找不到窗口: {window_title}")
@@ -21,28 +27,34 @@ def get_window_rect(window_title):
     # 确保窗口不是最小化状态
     if win32gui.IsIconic(hwnd):
         win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
-
+    
     # 将窗口置于前台
     win32gui.SetForegroundWindow(hwnd)
     time.sleep(0.5)  # 等待窗口激活
 
-    # 获取窗口位置信息
-    try:
-        # 获取精确尺寸
-        left, top, right, bottom = win32gui.GetWindowRect(hwnd)
-        client_left, client_top, client_right, client_bottom = win32gui.GetClientRect(
-            hwnd)
-        client_width = client_right - client_left
-        client_height = client_bottom - client_top
-
-        print(f"窗口尺寸 (含边框): {right-left}x{bottom-top}")
-        print(f"窗口内容尺寸: {client_width}x{client_height}")
-
-        return hwnd, (left, top, left + client_width, top + client_height)
-    except:
-        # 回退方法：直接使用GetWindowRect
-        rect = win32gui.GetWindowRect(hwnd)
-        return hwnd, rect
+    # 获取窗口物理尺寸（包括边框）
+    left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+    window_width = right - left
+    window_height = bottom - top
+    
+    # 获取客户区逻辑尺寸
+    _, _, client_width, client_height = win32gui.GetClientRect(hwnd)
+    
+    # 计算边框厚度（考虑DPI缩放）
+    border_horizontal = (window_width - client_width) // 2
+    border_vertical = window_height - client_height - border_horizontal
+    
+    # 调整客户区物理坐标（考虑DPI缩放）
+    client_left = left + border_horizontal
+    client_top = top + border_vertical
+    client_right = client_left + client_width
+    client_bottom = client_top + client_height
+    
+    print(f"窗口物理尺寸: {window_width}x{window_height}")
+    print(f"客户区逻辑尺寸: {client_width}x{client_height}")
+    print(f"客户区物理坐标: [{client_left}, {client_top}, {client_right}, {client_bottom}]")
+    
+    return hwnd, (client_left, client_top, client_right, client_bottom)
 
 
 def capture_screen_region(rect):

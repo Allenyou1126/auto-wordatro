@@ -56,7 +56,7 @@ def req_qat(pat, dict="YAWL"):
                 f"Dictionary '{dict}' is not supported. Choose from {QAT_DICTIONARIES}.")
         dict = QAT_DICTIONARIES.index(dict)
     url = f"https://www.quinapalus.com/cgi-bin/qat?pat={pat}&dict={dict}"
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
     if response.status_code != 200:
         raise ConnectionError(
             f"Failed to connect to QAT service. Status code: {response.status_code}")
