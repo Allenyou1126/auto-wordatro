@@ -124,22 +124,23 @@ def eval_word(place, unused, stargy="bold97"):
     n = len(place)
     if stargy.startswith("bold"):
         if n >= 9:
-            score += 1000000000
+            score += 10 ** 9
             if place[8][0] == 'bold':
-                score += 1000000000
+                score += 10 ** 9
         if n >= 7:
-            score += 10000000
+            score += 10 ** 8
             if place[6][0] == 'bold':
-                score += 1000000
+                score += 10 ** 8
         if '5' in stargy and n >= 5:
-            score += 100000
+            score += 10 ** 7
             if place[4][0] == 'bold':
-                score += 100000
-        score += unused.count(('special', '*')) * 10000
-        score += unused.count(('special', '!')) * 1000
-        score += len([l for l in unused if l[0] == 'bold']) * 100
-        score += sum([i + 1 for i, l in enumerate(place) if l[0] == 'underscore']) * 10
+                score += 10 ** 7
+        score += unused.count(('special', '*')) * 10 ** 6
+        score += unused.count(('special', '!')) * 10 ** 5
+        score += len([l for l in unused if l[0] == 'bold']) * 10 ** 4
+        score += sum([2 ** i for i, l in enumerate(place) if l[0] == 'underscore'])
         score += sum([n - i for i, l in enumerate(place) if l[0] == 'italic'])
+        score += n * 0.1
         return score
     else:
         raise ValueError(f"Unknown strategy: {stargy}")
