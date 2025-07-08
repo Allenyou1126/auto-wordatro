@@ -7,9 +7,6 @@ import {
 } from "../libs/api";
 import { useNotifications } from "@toolpad/core";
 import {
-	Accordion,
-	AccordionDetails,
-	AccordionSummary,
 	Box,
 	Button,
 	FormControl,
@@ -23,22 +20,17 @@ import {
 } from "@mui/material";
 import CardWithTitle from "../components/CardWithTitle";
 import { Error as ErrorDisplay } from "../components/Error";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Loading from "../components/Loading";
 import { useState } from "react";
 
 function WordItem({ length, words }: { length: number; words: string[] }) {
 	return (
-		<Accordion>
-			<AccordionSummary expandIcon={<ExpandMoreIcon />}>
-				<Typography>Length {length}</Typography>
-			</AccordionSummary>
-			<AccordionDetails>
-				<Typography sx={{ fontFamily: "'Cascadia Mono', monospace" }}>
-					{words.join(", ")}
-				</Typography>
-			</AccordionDetails>
-		</Accordion>
+		<>
+			{length !== 0 && <Typography variant="h6">Length {length}</Typography>}
+			<Typography sx={{ fontFamily: "'Cascadia Mono', monospace" }}>
+				{words.join(", ")}
+			</Typography>
+		</>
 	);
 }
 
