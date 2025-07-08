@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import CardWithTitle from "../components/CardWithTitle";
 import FileUpload from "../components/FileUpload";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
 	uploadFile,
 	useDictionaries,
@@ -22,9 +22,12 @@ import {
 import { useNavigate } from "react-router";
 import Loading from "../components/Loading";
 import { Error } from "../components/Error";
+import { useAtom, useSetAtom } from "jotai/react";
+import { fileNameState, optionsState } from "../libs/state";
 
 export function HomePage() {
 	const [file, setFile] = useState<File | null>(null);
+	const setFileName = useSetAtom(fileNameState);
 	const navigate = useNavigate();
 	const {
 		data: dictionariesData,
@@ -38,8 +41,7 @@ export function HomePage() {
 		error: strategiesError,
 		mutate: mutateStrategies,
 	} = useStrategies();
-	const [dictionary, setDictionary] = useState<string>("YAWL");
-	const [strategy, setStrategy] = useState<string>("bold97");
+	const [options, setOptions] = useAtom(optionsState);
 	const refresh = useRefreshAnalyze();
 	const isLoading = isLoadingDictionaries || isLoadingStrategies;
 	const error = dictionariesError || strategiesError;
@@ -48,46 +50,50 @@ export function HomePage() {
 			console.error("No file selected.");
 			return;
 		}
-		if (dictionary === "") {
+		if (options.dictionary === "") {
 			console.error("No dictionary selected.");
 			return;
 		}
-		if (strategy === "") {
+		if (options.strategy === "") {
 			console.error("No strategy selected.");
 			return;
 		}
-		if (!(dictionariesData?.data?.dictionaries ?? []).includes(dictionary)) {
+		if (
+			!(dictionariesData?.data?.dictionaries ?? []).includes(options.dictionary)
+		) {
 			console.error(
 				"Invalid dictionary selected.",
-				dictionary,
+				options.dictionary,
 				dictionariesData?.data?.dictionaries
 			);
 			return;
 		}
-		if (!(strategiesData?.data?.strategies ?? []).includes(strategy)) {
+		if (!(strategiesData?.data?.strategies ?? []).includes(options.strategy)) {
 			console.error(
 				"Invalid strategy selected.",
-				strategy,
+				options.strategy,
 				strategiesData?.data?.strategies
 			);
 			return;
 		}
 		uploadFile(file).then((res) => {
-			refresh(res.filename, dictionary, strategy);
-			navigate({
-				pathname: `/analyze/${res.filename}`,
-				search: new URLSearchParams({ dictionary, strategy }).toString(),
-			});
+			refresh(res.filename, options.dictionary, options.strategy);
+			setFileName(res.filename);
+			navigate(`/analyze`);
 		});
 	}, [
 		dictionariesData?.data?.dictionaries,
-		dictionary,
 		file,
 		navigate,
+		options.dictionary,
+		options.strategy,
 		refresh,
+		setFileName,
 		strategiesData?.data?.strategies,
-		strategy,
 	]);
+	useEffect(() => {
+		setFileName("");
+	}, [setFileName]);
 	if (isLoading) {
 		return <Loading />;
 	}
@@ -135,9 +141,12 @@ export function HomePage() {
 									label="Dictionary"
 									labelId="dictionary-select-label"
 									id="dictionary-select"
-									value={dictionary ?? ""}
+									value={options.dictionary}
 									onChange={(e) => {
-										setDictionary(e.target.value as string);
+										setOptions((prev) => ({
+											...prev,
+											dictionary: e.target.value as string,
+										}));
 									}}>
 									{dictionaries.map((dict) => {
 										return (
@@ -157,9 +166,12 @@ export function HomePage() {
 									label="Strategy"
 									labelId="strategy-select-label"
 									id="strategy-select"
-									value={strategy ?? ""}
+									value={options.strategy}
 									onChange={(e) => {
-										setStrategy(e.target.value as string);
+										setOptions((prev) => ({
+											...prev,
+											strategy: e.target.value as string,
+										}));
 									}}>
 									{strategies.map((strat) => {
 										return (
@@ -173,7 +185,11 @@ export function HomePage() {
 							</FormControl>
 							<Button
 								onClick={submit}
-								disabled={file === null || dictionary === "" || strategy === ""}
+								disabled={
+									file === null ||
+									options.dictionary === "" ||
+									options.strategy === ""
+								}
 								variant="contained">
 								Start Analyze
 							</Button>

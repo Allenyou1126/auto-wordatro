@@ -19,6 +19,7 @@
 		"@toolpad/core": "^0.16.0",
 		"axios": "^1.10.0",
 		"axois": "0.0.1-security",
+		"jotai": "^2.12.5",
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",
 		"react-router": "^7.6.3",

@@ -1,4 +1,4 @@
-import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useNavigate } from "react-router";
 import {
 	getUploadedFileUrl,
 	useAnalyze,
@@ -21,7 +21,8 @@ import {
 import CardWithTitle from "../components/CardWithTitle";
 import { Error as ErrorDisplay } from "../components/Error";
 import Loading from "../components/Loading";
-import { useState } from "react";
+import { useAtom, useAtomValue } from "jotai/react";
+import { fileNameState, optionsState } from "../libs/state";
 
 function WordItem({ length, words }: { length: number; words: string[] }) {
 	return (
@@ -37,18 +38,14 @@ function WordItem({ length, words }: { length: number; words: string[] }) {
 export function AnalyzePage() {
 	const notification = useNotifications();
 	const navigate = useNavigate();
-	const { filename } = useParams();
-	const [searchParams] = useSearchParams();
-	const dictionary = searchParams.get("dictionary") ?? "";
-	const strategy = searchParams.get("strategy") ?? "";
+	const filename = useAtomValue(fileNameState);
+	const [options, setOptions] = useAtom(optionsState);
 	const {
 		data: analyzeData,
 		error: analyzeError,
 		isLoading: isLoadingAnalyze,
 		mutate,
-	} = useAnalyze(filename, dictionary, strategy);
-	const [dictionaryToUse, setDictionary] = useState<string>(dictionary);
-	const [strategyToUse, setStrategy] = useState<string>(strategy);
+	} = useAnalyze(filename, options.dictionary, options.strategy);
 	const {
 		data: dictionariesData,
 		isLoading: isLoadingDictionaries,
@@ -84,16 +81,16 @@ export function AnalyzePage() {
 	if (isLoading) {
 		return <Loading />;
 	}
-	if (!dictionariesData.data.dictionaries.includes(dictionary)) {
+	if (!dictionariesData.data.dictionaries.includes(options.dictionary)) {
 		notification.show(
-			`Dictionary "${dictionary}" is not available. Please select a valid dictionary.`,
+			`Dictionary "${options.dictionary}" is not available. Please select a valid dictionary.`,
 			{ severity: "error" }
 		);
 		return <ErrorDisplay error={new Error("Invalid dictionary selected.")} />;
 	}
-	if (!strategiesData.data.strategies.includes(strategy)) {
+	if (!strategiesData.data.strategies.includes(options.strategy)) {
 		notification.show(
-			`Strategy "${strategy}" is not available. Please select a valid strategy.`,
+			`Strategy "${options.strategy}" is not available. Please select a valid strategy.`,
 			{ severity: "error" }
 		);
 		return <ErrorDisplay error={new Error("Invalid strategy selected.")} />;
@@ -135,9 +132,12 @@ export function AnalyzePage() {
 										label="Dictionary"
 										labelId="dictionary-select-label"
 										id="dictionary-select"
-										value={dictionaryToUse}
+										value={options.dictionary}
 										onChange={(e) => {
-											setDictionary(e.target.value as string);
+											setOptions((prev) => ({
+												...prev,
+												dictionary: e.target.value as string,
+											}));
 										}}>
 										{dictionariesData?.data.dictionaries.map((dict) => {
 											return (
@@ -157,9 +157,12 @@ export function AnalyzePage() {
 										label="Strategy"
 										labelId="strategy-select-label"
 										id="strategy-select"
-										value={strategyToUse}
+										value={options.strategy}
 										onChange={(e) => {
-											setStrategy(e.target.value as string);
+											setOptions((prev) => ({
+												...prev,
+												strategy: e.target.value as string,
+											}));
 										}}>
 										{strategiesData?.data.strategies.map((strat) => {
 											return (
@@ -184,28 +187,13 @@ export function AnalyzePage() {
 									<Button
 										variant="contained"
 										onClick={() => {
-											navigate({
-												pathname: `/debug/${filename}`,
-												search: searchParams.toString(),
-											});
+											navigate(`/debug/${filename}`);
 										}}>
 										Inspect Debug Image
 									</Button>
 									<Button
 										variant="contained"
 										onClick={() => {
-											if (
-												dictionaryToUse !== dictionary ||
-												strategyToUse !== strategy
-											) {
-												navigate({
-													pathname: `/analyze/${filename}`,
-													search: new URLSearchParams({
-														dictionary: dictionaryToUse,
-														strategy: strategyToUse,
-													}).toString(),
-												});
-											}
 											mutate(undefined, { revalidate: true });
 										}}>
 										Re-run Analyze
