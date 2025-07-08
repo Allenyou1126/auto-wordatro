@@ -49,6 +49,9 @@ def upload_file():
     logger.info(f"Saving file to: {filepath}")
 
     os.makedirs(UPLOAD_DIR, exist_ok=True)
+    if os.path.exists(filepath):
+        logger.debug(f"File already exists: {filepath}")
+        os.remove(filepath)
 
     with open(filepath, "wb+") as fp:
         uploaded_file.save(fp)

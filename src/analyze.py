@@ -284,6 +284,9 @@ def analyze(filename: str):
     debug_filename = f"debug_{filename}"
     debug_filepath = os.path.join(
         UPLOAD_DIR, debug_filename)
+    if os.path.exists(debug_filepath):
+        logger.debug(f"调试图像已存在，删除旧文件: {debug_filepath}")
+        os.remove(debug_filepath)
     cv2.imwrite(debug_filepath, debug_img)
 
     return {
