@@ -23,6 +23,7 @@ import { Error } from "../components/Error";
 import Loading from "../components/Loading";
 import { useAtomValue } from "jotai/react";
 import { fileNameState, optionsState } from "../libs/state";
+import { ZoomableImage } from "../components/ZoomableImage";
 
 function PreviewDialog({
 	payload,
@@ -233,12 +234,15 @@ export function DebugPage() {
 			<Grid container spacing={2}>
 				<Grid size={6}>
 					<CardWithTitle title="Original Image">
-						<img width="100%" src={getUploadedFileUrl(res.original_image)} />
+						<ZoomableImage
+							width="100%"
+							src={getUploadedFileUrl(res.original_image)}
+						/>
 					</CardWithTitle>
 				</Grid>
 				<Grid size={6}>
 					<CardWithTitle title="Region Marked Image">
-						<img
+						<ZoomableImage
 							style={{
 								maxWidth: "100%",
 								height: "auto",

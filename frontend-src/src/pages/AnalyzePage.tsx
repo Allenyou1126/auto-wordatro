@@ -23,6 +23,7 @@ import { Error as ErrorDisplay } from "../components/Error";
 import Loading from "../components/Loading";
 import { useAtom, useAtomValue } from "jotai/react";
 import { fileNameState, optionsState } from "../libs/state";
+import { ZoomableImage } from "../components/ZoomableImage";
 
 function WordItem({ length, words }: { length: number; words: string[] }) {
 	return (
@@ -111,7 +112,7 @@ export function AnalyzePage() {
 			<Grid container spacing={2}>
 				<Grid size={6}>
 					<CardWithTitle title="Original Image">
-						<img
+						<ZoomableImage
 							width="100%"
 							src={getUploadedFileUrl(analyzeData.original_image)}
 						/>
