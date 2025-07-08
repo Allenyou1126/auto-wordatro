@@ -46,7 +46,7 @@ createRoot(document.getElementById("root")!).render(
 			<BrowserRouter>
 				<ReactRouterAppProvider
 					branding={{
-						title: "Auto Wordatro",
+						title: "Wordatro Helper",
 					}}
 					theme={{
 						light: lightTheme,

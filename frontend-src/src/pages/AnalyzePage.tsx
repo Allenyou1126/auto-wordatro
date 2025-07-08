@@ -43,7 +43,6 @@ export function AnalyzePage() {
 	const { filename } = useParams();
 	const [searchParams] = useSearchParams();
 	const dictionary = searchParams.get("dictionary");
-	console.log(dictionary);
 	const { data, error, isLoading, mutate } = useAnalyze(filename, dictionary);
 	const [dictionaryToUse, setDictionary] = useState<string>(dictionary ?? "");
 	const {
@@ -166,34 +165,124 @@ export function AnalyzePage() {
 					</Grid>
 					<Grid size={12} sx={{ width: "100%", flexGrow: "1" }}>
 						<CardWithTitle title="Analyze Results">
-							<Typography fontWeight="700" variant="subtitle1">
-								Regular:
-							</Typography>
-							<Typography>
-								{res.debug_info.categories.Regular.map(
-									(item) => item.matches.at(0)?.letter
-								).join(" ")}
-							</Typography>
-							<Typography fontWeight="700	" variant="subtitle1">
-								Improved:
-							</Typography>
-							<Typography>
-								{res.debug_info.categories.Improved.map(
-									(item) => item.matches.at(0)?.letter
-								).join(" ")}
-							</Typography>
-							<Typography fontWeight="700	" variant="subtitle1">
-								Special:
-							</Typography>
-							<Typography>
-								{res.debug_info.categories.Special.map(
-									(item) => item.matches.at(0)?.letter
-								).join(" ")}
-							</Typography>
-							<Typography fontWeight="700	" variant="subtitle1">
-								Max Length:
-							</Typography>
-							<Typography>{res.debug_info.max_length}</Typography>
+							<Box
+								sx={{
+									display: "flex",
+									flexDirection: "row",
+									gap: 2,
+									flexWrap: "wrap",
+								}}>
+								<Box
+									sx={{
+										display: "flex",
+										flexDirection: "row",
+										gap: 1,
+										flexBasis: "40%",
+									}}>
+									<Typography
+										sx={{
+											display: "inline-block",
+											verticalAlign: "baseline",
+											lineHeight: "1.75",
+										}}
+										fontWeight="700"
+										variant="subtitle1">
+										Regular:
+									</Typography>
+									<Typography
+										sx={{
+											display: "inline-block",
+											verticalAlign: "baseline",
+											lineHeight: "1.75",
+										}}>
+										{res.debug_info.categories.Regular.map(
+											(item) => item.matches.at(0)?.letter
+										).join(" ")}
+									</Typography>
+								</Box>
+								<Box
+									sx={{
+										display: "flex",
+										flexDirection: "row",
+										gap: 1,
+										flexBasis: "40%",
+									}}>
+									<Typography
+										sx={{
+											display: "inline-block",
+											verticalAlign: "baseline",
+											lineHeight: "1.75",
+										}}
+										fontWeight="700"
+										variant="subtitle1">
+										Improved:
+									</Typography>
+									<Typography
+										sx={{
+											display: "inline-block",
+											verticalAlign: "baseline",
+											lineHeight: "1.75",
+										}}>
+										{res.debug_info.categories.Improved.map(
+											(item) => item.matches.at(0)?.letter
+										).join(" ")}
+									</Typography>
+								</Box>
+								<Box
+									sx={{
+										display: "flex",
+										flexDirection: "row",
+										gap: 1,
+										flexBasis: "40%",
+									}}>
+									<Typography
+										sx={{
+											display: "inline-block",
+											verticalAlign: "baseline",
+											lineHeight: "1.75",
+										}}
+										fontWeight="700"
+										variant="subtitle1">
+										Special:
+									</Typography>
+									<Typography
+										sx={{
+											display: "inline-block",
+											verticalAlign: "baseline",
+											lineHeight: "1.75",
+										}}>
+										{res.debug_info.categories.Special.map(
+											(item) => item.matches.at(0)?.letter
+										).join(" ")}
+									</Typography>
+								</Box>
+								<Box
+									sx={{
+										display: "flex",
+										flexDirection: "row",
+										gap: 1,
+										flexBasis: "40%",
+									}}>
+									<Typography
+										sx={{
+											display: "inline-block",
+											verticalAlign: "baseline",
+											lineHeight: "1.75",
+										}}
+										fontWeight="700"
+										variant="subtitle1">
+										Max Length:
+									</Typography>
+									<Typography
+										sx={{
+											display: "inline-block",
+											verticalAlign: "baseline",
+											lineHeight: "1.75",
+										}}>
+										{res.debug_info.max_length}
+									</Typography>
+								</Box>
+							</Box>
 						</CardWithTitle>
 					</Grid>
 				</Grid>
