@@ -65,6 +65,7 @@ def req_qat(pat, dict="YAWL"):
             f"Failed to connect to QAT service. Status code: {response.status_code}")
     return parse_html(response.content)
 
+
 def gen_perms(word, n_ex):
     n = len(word) + n_ex
     perms = []
@@ -75,10 +76,11 @@ def gen_perms(word, n_ex):
         perms.append(''.join(arr))
     return perms
 
+
 def fill_word(word, letters, strategy="bold97"):
     unused = letters.copy()
     length = len(word)
-    place = [None for _ in range(length)]
+    place: list[tuple[str, str] | None] = [None for _ in range(length)]
 
     def fill(i, order):
         c = word[i]
@@ -95,7 +97,8 @@ def fill_word(word, letters, strategy="bold97"):
             unused.remove(('special', '*'))
             place[i] = ('special', '*')
             return
-        raise ValueError(f"Cannot fill position {i} in word '{word}' with order {order}, place: {place}, unused: {unused}")
+        raise ValueError(
+            f"Cannot fill position {i} in word '{word}' with order {order}, place: {place}, unused: {unused}")
 
     if strategy.startswith("bold"):
         b_range = []
@@ -119,6 +122,7 @@ def fill_word(word, letters, strategy="bold97"):
     else:
         raise ValueError(f"Unknown strategy: {strategy}")
 
+
 def eval_word(place, unused, stargy="bold97"):
     score = 0
     n = len(place)
@@ -138,11 +142,13 @@ def eval_word(place, unused, stargy="bold97"):
         score += unused.count(('special', '*')) * 10000
         score += unused.count(('special', '!')) * 1000
         score += len([l for l in unused if l[0] == 'bold']) * 100
-        score += sum([i + 1 for i, l in enumerate(place) if l[0] == 'underscore']) * 10
+        score += sum([i + 1 for i, l in enumerate(place)
+                     if l[0] == 'underscore']) * 10
         score += sum([n - i for i, l in enumerate(place) if l[0] == 'italic'])
         return score
     else:
         raise ValueError(f"Unknown strategy: {stargy}")
+
 
 def solve_word(word, letters, n_ex, strategy="bold97"):
     word = word.upper()
@@ -155,9 +161,10 @@ def solve_word(word, letters, n_ex, strategy="bold97"):
             results.append((perm, place, unused, score))
         except ValueError as e:
             logger.debug(f"Failed to fill word '{word}' with error: {e}")
-    
+
     results.sort(key=lambda x: x[-1], reverse=True)  # 按分数降序排序
     return results[0] if results else None
+
 
 def get_words(analyze_result, dictionary="YAWL", strategy="bold97"):
     max_length = analyze_result.get('max_length', 9)
@@ -173,15 +180,16 @@ def get_words(analyze_result, dictionary="YAWL", strategy="bold97"):
 
     # 初始化结果字典
     results = {}
-    pat = ''.join([l[1] for l in letters]).replace("*", ".").replace("!", "").lower()
+    pat = ''.join([l[1] for l in letters]).replace(
+        "*", ".").replace("!", "").lower()
 
     # 辅助函数：为单个长度请求单词
     def _request_words_for_length(l):
         try:
             # 检查是否已有结果且不再需要短词
             # if l < 5 and any(results.values()):
-                # return l, []  # 跳过短词
-            
+            # return l, []  # 跳过短词
+
             lpat = f'{l}:*/' + pat
             words = req_qat(lpat, dict=dictionary)
             return l, words.get(l, [])
@@ -193,15 +201,16 @@ def get_words(analyze_result, dictionary="YAWL", strategy="bold97"):
     min_length = 1 if strategy == "None" else 5
     lengths = list(range(max_length, min_length - 1, -1))
     with ThreadPoolExecutor(max_workers=min(5, len(lengths))) as executor:  # 限制最大线程数
-        futures = [executor.submit(_request_words_for_length, l) for l in lengths]
-        
+        futures = [executor.submit(_request_words_for_length, l)
+                   for l in lengths]
+
         for future in concurrent.futures.as_completed(futures):
             l, word_list = future.result()
             results[l] = word_list
 
     if strategy == "None":
         return results
-    
+
     n_ex = ''.join([l[1] for l in letters]).count("!")
     final_results = {}
     for length, words in results.items():
@@ -214,8 +223,9 @@ def get_words(analyze_result, dictionary="YAWL", strategy="bold97"):
                 final_results[exlength] = []
             for word in words:
                 try:
-                    perm, place, unused, score = solve_word(word, letters, ex, strategy)
-                    if place is not None:
+                    sol_word_result = solve_word(word, letters, ex, strategy)
+                    if sol_word_result is not None:
+                        perm, place, unused, score = sol_word_result
                         final_results[exlength].append({
                             'word': word,
                             'perm': perm,
@@ -224,14 +234,17 @@ def get_words(analyze_result, dictionary="YAWL", strategy="bold97"):
                             'score': score
                         })
                 except ValueError as e:
-                    logger.debug(f"Failed to solve word '{word}' with error: {e}")
+                    logger.debug(
+                        f"Failed to solve word '{word}' with error: {e}")
     for length, words in final_results.items():
         if not words:
             del final_results[length]
         else:
-            final_results[length] = sorted(words, key=lambda x: x['score'], reverse=True)
+            final_results[length] = sorted(
+                words, key=lambda x: x['score'], reverse=True)
             final_results[length] = [x['perm'] for x in final_results[length]]
     return final_results
+
 
 if __name__ == "__main__":
     import sys
