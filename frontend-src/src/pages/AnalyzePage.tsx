@@ -194,6 +194,7 @@ export function AnalyzePage() {
 											display: "inline-block",
 											verticalAlign: "baseline",
 											lineHeight: "1.75",
+											fontFamily: "'cascadia Mono', monospace",
 										}}>
 										{res.debug_info.categories.Regular.map(
 											(item) => item.matches.at(0)?.letter
@@ -218,10 +219,12 @@ export function AnalyzePage() {
 										Improved:
 									</Typography>
 									<Typography
+										component="span"
 										sx={{
 											display: "inline-block",
 											verticalAlign: "baseline",
 											lineHeight: "1.75",
+											fontFamily: "'cascadia Mono', monospace",
 										}}>
 										{res.debug_info.categories.Improved.map(
 											(item) => item.matches.at(0)?.letter
@@ -250,6 +253,7 @@ export function AnalyzePage() {
 											display: "inline-block",
 											verticalAlign: "baseline",
 											lineHeight: "1.75",
+											fontFamily: "'cascadia Mono', monospace",
 										}}>
 										{res.debug_info.categories.Special.map(
 											(item) => item.matches.at(0)?.letter
@@ -278,6 +282,7 @@ export function AnalyzePage() {
 											display: "inline-block",
 											verticalAlign: "baseline",
 											lineHeight: "1.75",
+											fontFamily: "'cascadia Mono', monospace",
 										}}>
 										{res.debug_info.max_length}
 									</Typography>
