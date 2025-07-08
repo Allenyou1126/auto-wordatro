@@ -86,6 +86,8 @@ def find_all_matches(region_img, category):
                 letter_name = "!"
             elif letter_name == "wildcard":
                 letter_name = "*"
+        else:
+            font = "unknown"
 
         matches.append({
             "template": filename,
@@ -178,6 +180,7 @@ def get_valid_regions(img, mask, min_area=0.001, ar=None, udlr=(0, 0, 0, 0)):
 def inverse_color(color: tuple[int, int, int]) -> tuple[int, int, int]:
     return 255 - color[0], 255 - color[1], 255 - color[2]
 
+
 def annotate_image(img, regions, color=(0, 0, 255), label=None):
     """在图像上标记检测到的区域"""
     for region in regions:
@@ -190,6 +193,7 @@ def annotate_image(img, regions, color=(0, 0, 255), label=None):
         img = cv2.putText(img, txt, (x + 5, y + 20),
                           cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
     return img
+
 
 def analyze(filename: str):
     # 确保模板目录存在
@@ -212,7 +216,8 @@ def analyze(filename: str):
     for category, colors in CATEGORY_COLORS.items():
         # 为该类别检测颜色区域
         mask = get_mask(img, colors, tolerance=10)
-        regions = get_valid_regions(img, mask, min_area=0.001, ar=(0.8, 1.2), udlr=(0.7, 0, 0, 0))
+        regions = get_valid_regions(
+            img, mask, min_area=0.001, ar=(0.8, 1.2), udlr=(0.7, 0, 0, 0))
         logger.info(f"{category} 检测到 {len(regions)} 个有效字母")
 
         debug_img = annotate_image(
@@ -261,7 +266,8 @@ def analyze(filename: str):
         logger.info(f"总共检测到 {total_regions} 个字母")
 
     white_mask = get_mask(img, [(255, 255, 255)], tolerance=10)
-    white_regions = get_valid_regions(img, white_mask, min_area=0.001, ar=(0.8, 1.2), udlr=(0.4, 0.3, 0.15, 0.15))
+    white_regions = get_valid_regions(
+        img, white_mask, min_area=0.001, ar=(0.8, 1.2), udlr=(0.4, 0.3, 0.15, 0.15))
 
     debug_img = annotate_image(
         debug_img, white_regions, color=(255, 0, 0), label="W")
@@ -278,6 +284,9 @@ def analyze(filename: str):
     debug_filename = f"debug_{filename}"
     debug_filepath = os.path.join(
         UPLOAD_DIR, debug_filename)
+    if os.path.exists(debug_filepath):
+        logger.debug(f"调试图像已存在，删除旧文件: {debug_filepath}")
+        os.remove(debug_filepath)
     cv2.imwrite(debug_filepath, debug_img)
 
     return {

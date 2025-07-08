@@ -18,7 +18,7 @@ const lightTheme = createTheme({
 	},
 	components: {
 		MuiCssBaseline: {
-			styleOverrides: `@font-face { font-family: "Cascadia Mono";	font-style: normal;	font-display: swap;	src: local("Cascadia Mono"), url("/CascadiaMono.woff2") format("woff2"); } @font-face { font-family: "Cascadia Mono"; font-style: italic; font-display: swap; src: local("Cascadia Mono"), url("/CascadiaMonoItalic.woff2") format("woff2"); }`,
+			styleOverrides: `@font-face { font-family: "Cascadia Mono";	font-style: normal;	font-display: swap;	src: local("Cascadia Mono"), url("/CascadiaMono.woff2") format("woff2"); } @font-face { font-family: "Cascadia Mono"; font-style: italic; font-display: swap; src: local("Cascadia Mono Italic"), url("/CascadiaMonoItalic.woff2") format("woff2"); }`,
 		},
 	},
 });
@@ -28,7 +28,7 @@ const darkTheme = createTheme({
 	},
 	components: {
 		MuiCssBaseline: {
-			styleOverrides: `@font-face { font-family: "Cascadia Mono";	font-style: normal;	font-display: swap;	src: local("Cascadia Mono"), url("/CascadiaMono.woff2") format("woff2"); } @font-face { font-family: "Cascadia Mono"; font-style: italic; font-display: swap; src: local("Cascadia Mono"), url("/CascadiaMonoItalic.woff2") format("woff2"); }`,
+			styleOverrides: `@font-face { font-family: "Cascadia Mono";	font-style: normal;	font-display: swap;	src: local("Cascadia Mono"), url("/CascadiaMono.woff2") format("woff2"); } @font-face { font-family: "Cascadia Mono"; font-style: italic; font-display: swap; src: local("Cascadia Mono Italic"), url("/CascadiaMonoItalic.woff2") format("woff2"); }`,
 		},
 	},
 });
@@ -46,7 +46,7 @@ createRoot(document.getElementById("root")!).render(
 			<BrowserRouter>
 				<ReactRouterAppProvider
 					branding={{
-						title: "Auto Wordatro",
+						title: "Wordatro Helper",
 					}}
 					theme={{
 						light: lightTheme,

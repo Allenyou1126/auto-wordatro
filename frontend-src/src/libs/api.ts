@@ -27,6 +27,7 @@ export type MatchResult = {
 	template: string;
 	score: number;
 	letter: string;
+	font: string;
 };
 
 export type Result = {
@@ -58,11 +59,16 @@ type AnalyzeResponse = {
 	words: {
 		[key: number]: string[];
 	};
+	options: {
+		dictionary: string;
+		strategy: string;
+	};
 };
 
 export async function startAnalyze(
 	filename?: string,
-	dictionary?: string | null
+	dictionary?: string | null,
+	strategy?: string | null
 ): Promise<AnalyzeResponse> {
 	if (!filename) {
 		throw new Error("Filename is required for analysis.");
@@ -70,6 +76,7 @@ export async function startAnalyze(
 	const response = await api.post<ApiResponse<AnalyzeResponse>>("/analyze", {
 		filename,
 		dictionary: dictionary ?? undefined,
+		strategy: strategy ?? undefined,
 	});
 	if (response.status !== 200 || response.data.code !== 0) {
 		throw new Error(
@@ -82,8 +89,12 @@ export async function startAnalyze(
 export function useRefreshAnalyze() {
 	const { mutate } = useSWRConfig();
 	return useCallback(
-		(filename?: string, dictionary?: string | null) => {
-			mutate({ filename, type: "analyze", dictionary }, undefined, {
+		(
+			filename?: string,
+			dictionary?: string | null,
+			strategy?: string | null
+		) => {
+			mutate({ filename, type: "analyze", dictionary, strategy }, undefined, {
 				revalidate: true,
 			});
 		},
@@ -99,17 +110,31 @@ export function useDictionaries() {
 	return useSWR<ApiResponse<DictionariesResponse>>("/dictionaries");
 }
 
-export function useAnalyze(filename?: string, dictionary?: string | null) {
+type StrategiesResponse = {
+	strategies: string[];
+};
+
+export function useStrategies() {
+	return useSWR<ApiResponse<StrategiesResponse>>("/strategies");
+}
+
+export function useAnalyze(
+	filename?: string,
+	dictionary?: string | null,
+	strategy?: string | null
+) {
 	return useSWRImmutable<AnalyzeResponse>(
-		{ filename, type: "analyze", dictionary },
+		{ filename, type: "analyze", dictionary, strategy },
 		async ({
 			filename,
 			dictionary,
+			strategy,
 		}: {
 			filename: string;
 			dictionary: string | null;
+			strategy: string | null;
 		}) => {
-			return await startAnalyze(filename, dictionary);
+			return await startAnalyze(filename, dictionary, strategy);
 		},
 		{
 			shouldRetryOnError: false,

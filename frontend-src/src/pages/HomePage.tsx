@@ -13,7 +13,12 @@ import {
 import CardWithTitle from "../components/CardWithTitle";
 import FileUpload from "../components/FileUpload";
 import { useCallback, useState } from "react";
-import { uploadFile, useDictionaries, useRefreshAnalyze } from "../libs/api";
+import {
+	uploadFile,
+	useDictionaries,
+	useRefreshAnalyze,
+	useStrategies,
+} from "../libs/api";
 import { useNavigate } from "react-router";
 import Loading from "../components/Loading";
 import { Error } from "../components/Error";
@@ -21,9 +26,23 @@ import { Error } from "../components/Error";
 export function HomePage() {
 	const [file, setFile] = useState<File | null>(null);
 	const navigate = useNavigate();
-	const { data, isLoading, error, mutate } = useDictionaries();
+	const {
+		data: dictionariesData,
+		isLoading: isLoadingDictionaries,
+		error: dictionariesError,
+		mutate: mutateDictionaries,
+	} = useDictionaries();
+	const {
+		data: strategiesData,
+		isLoading: isLoadingStrategies,
+		error: strategiesError,
+		mutate: mutateStrategies,
+	} = useStrategies();
 	const [dictionary, setDictionary] = useState<string>("YAWL");
+	const [strategy, setStrategy] = useState<string>("bold97");
 	const refresh = useRefreshAnalyze();
+	const isLoading = isLoadingDictionaries || isLoadingStrategies;
+	const error = dictionariesError || strategiesError;
 	const submit = useCallback(() => {
 		if (file === null) {
 			console.error("No file selected.");
@@ -33,22 +52,42 @@ export function HomePage() {
 			console.error("No dictionary selected.");
 			return;
 		}
-		if (!(data?.data?.dictionaries ?? []).includes(dictionary)) {
+		if (strategy === "") {
+			console.error("No strategy selected.");
+			return;
+		}
+		if (!(dictionariesData?.data?.dictionaries ?? []).includes(dictionary)) {
 			console.error(
 				"Invalid dictionary selected.",
 				dictionary,
-				data?.data?.dictionaries
+				dictionariesData?.data?.dictionaries
+			);
+			return;
+		}
+		if (!(strategiesData?.data?.strategies ?? []).includes(strategy)) {
+			console.error(
+				"Invalid strategy selected.",
+				strategy,
+				strategiesData?.data?.strategies
 			);
 			return;
 		}
 		uploadFile(file).then((res) => {
-			refresh(res.filename, dictionary);
+			refresh(res.filename, dictionary, strategy);
 			navigate({
 				pathname: `/analyze/${res.filename}`,
-				search: new URLSearchParams({ dictionary }).toString(),
+				search: new URLSearchParams({ dictionary, strategy }).toString(),
 			});
 		});
-	}, [data?.data?.dictionaries, dictionary, file, navigate, refresh]);
+	}, [
+		dictionariesData?.data?.dictionaries,
+		dictionary,
+		file,
+		navigate,
+		refresh,
+		strategiesData?.data?.strategies,
+		strategy,
+	]);
 	if (isLoading) {
 		return <Loading />;
 	}
@@ -57,12 +96,14 @@ export function HomePage() {
 			<Error
 				error={error}
 				retry={() => {
-					mutate();
+					mutateDictionaries();
+					mutateStrategies();
 				}}
 			/>
 		);
 	}
-	const dictionaries = data!.data.dictionaries;
+	const dictionaries = dictionariesData!.data.dictionaries;
+	const strategies = strategiesData!.data.strategies;
 	return (
 		<Box sx={{ flexGrow: 1 }}>
 			<Grid container spacing={2}>
@@ -110,9 +151,29 @@ export function HomePage() {
 									Select a dictionary for analysis.
 								</FormHelperText>
 							</FormControl>
+							<FormControl fullWidth>
+								<InputLabel id="strategy-select-label">Strategy</InputLabel>
+								<Select
+									label="Strategy"
+									labelId="strategy-select-label"
+									id="strategy-select"
+									value={strategy ?? ""}
+									onChange={(e) => {
+										setStrategy(e.target.value as string);
+									}}>
+									{strategies.map((strat) => {
+										return (
+											<MenuItem key={strat} value={strat}>
+												{strat}
+											</MenuItem>
+										);
+									})}
+								</Select>
+								<FormHelperText>Select a strategy for analysis.</FormHelperText>
+							</FormControl>
 							<Button
 								onClick={submit}
-								disabled={file === null || dictionary === ""}
+								disabled={file === null || dictionary === "" || strategy === ""}
 								variant="contained">
 								Start Analyze
 							</Button>

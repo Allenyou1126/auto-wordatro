@@ -11,10 +11,17 @@ analyze_bp = Blueprint("analyze", __name__)
 
 logger = get_logger(__name__)
 
+AVAILABLE_STRATEGIES = ["none", "bold97", "bold975"]
+
 
 @analyze_bp.get("/dictionaries")
 def get_dictionaries():
     return response.build_response({"dictionaries": QAT_DICTIONARIES})
+
+
+@analyze_bp.get("/strategies")
+def get_strategies():
+    return response.build_response({"strategies": AVAILABLE_STRATEGIES})
 
 
 @analyze_bp.post("/analyze")
@@ -32,6 +39,12 @@ def analyze_file():
             f"Invalid dictionary: {dictionary}. Supported dictionaries: {QAT_DICTIONARIES}")
         return response.INVALID_PARAMETER_RESPONSE
 
+    strategy = json_obj.get("strategy", "bold97")
+    if strategy not in AVAILABLE_STRATEGIES:
+        logger.debug(
+            f"Invalid strategy: {strategy}. Supported strategies: {AVAILABLE_STRATEGIES}")
+        return response.INVALID_PARAMETER_RESPONSE
+
     filename = json_obj.get("filename")
     if not filename:
         logger.debug(f"Filename not found in JSON.")
@@ -39,10 +52,16 @@ def analyze_file():
 
     analyze_result = analyze(filename)
 
+    logger.debug(analyze_result)
+
     if not analyze_result:
         logger.debug(f"Analysis failed for file: {filename}")
-        return response.FILE_NOT_FOUND_RESPONSE
+        return response.build_error_response(error_message="Analysis failed. Please check the file and try again.")
 
-    words_result = get_words(analyze_result, dictionary=dictionary)
+    words_result = get_words(
+        analyze_result, dictionary=dictionary, strategy=strategy)
 
-    return response.build_response({"original_image": filename, "debug_info": analyze_result, "words": words_result})
+    return response.build_response({"original_image": filename, "debug_info": analyze_result, "words": words_result, "options": {
+        "dictionary": dictionary,
+        "strategy": strategy
+    }})
