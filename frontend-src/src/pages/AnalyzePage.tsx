@@ -187,7 +187,7 @@ export function AnalyzePage() {
 									<Button
 										variant="contained"
 										onClick={() => {
-											navigate(`/debug/${filename}`);
+											navigate(`/debug`);
 										}}>
 										Inspect Debug Image
 									</Button>
