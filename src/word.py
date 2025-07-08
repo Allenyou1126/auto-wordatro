@@ -237,14 +237,13 @@ def get_words(analyze_result, dictionary="YAWL", strategy="bold97"):
                 except ValueError as e:
                     logger.debug(
                         f"Failed to solve word '{word}' with error: {e}")
+    ret = {}
     for length, words in final_results.items():
-        if not words:
-            del final_results[length]
-        else:
-            final_results[length] = sorted(
+        if words:
+            ret[length] = sorted(
                 words, key=lambda x: x['score'], reverse=True)
-            final_results[length] = [x['perm'] for x in final_results[length]]
-    return final_results
+            ret[length] = [x['perm'] for x in ret[length]]
+    return ret
 
 
 if __name__ == "__main__":

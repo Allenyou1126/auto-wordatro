@@ -52,9 +52,11 @@ def analyze_file():
 
     analyze_result = analyze(filename)
 
+    logger.debug(analyze_result)
+
     if not analyze_result:
         logger.debug(f"Analysis failed for file: {filename}")
-        return response.FILE_NOT_FOUND_RESPONSE
+        return response.build_error_response(error_message="Analysis failed. Please check the file and try again.")
 
     words_result = get_words(
         analyze_result, dictionary=dictionary, strategy=strategy)
