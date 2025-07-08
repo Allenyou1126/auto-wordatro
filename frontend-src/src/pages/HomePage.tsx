@@ -73,7 +73,7 @@ export function HomePage() {
 			return;
 		}
 		uploadFile(file).then((res) => {
-			refresh(res.filename, dictionary);
+			refresh(res.filename, dictionary, strategy);
 			navigate({
 				pathname: `/analyze/${res.filename}`,
 				search: new URLSearchParams({ dictionary, strategy }).toString(),

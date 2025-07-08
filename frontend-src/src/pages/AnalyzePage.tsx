@@ -46,7 +46,7 @@ export function AnalyzePage() {
 		error: analyzeError,
 		isLoading: isLoadingAnalyze,
 		mutate,
-	} = useAnalyze(filename, dictionary);
+	} = useAnalyze(filename, dictionary, strategy);
 	const [dictionaryToUse, setDictionary] = useState<string>(dictionary);
 	const [strategyToUse, setStrategy] = useState<string>(strategy);
 	const {

@@ -89,8 +89,12 @@ export async function startAnalyze(
 export function useRefreshAnalyze() {
 	const { mutate } = useSWRConfig();
 	return useCallback(
-		(filename?: string, dictionary?: string | null) => {
-			mutate({ filename, type: "analyze", dictionary }, undefined, {
+		(
+			filename?: string,
+			dictionary?: string | null,
+			strategy?: string | null
+		) => {
+			mutate({ filename, type: "analyze", dictionary, strategy }, undefined, {
 				revalidate: true,
 			});
 		},

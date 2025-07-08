@@ -168,6 +168,9 @@ def solve_word(word, letters, n_ex, strategy="bold97"):
 
 
 def get_words(analyze_result, dictionary="YAWL", strategy="bold97"):
+    logger.debug(
+        f"Getting words from analyze_result: {analyze_result}, dictionary: {dictionary}, strategy: {strategy}")
+
     max_length = analyze_result.get('max_length', 9)
     categories = analyze_result.get('categories', {})
 
@@ -199,7 +202,7 @@ def get_words(analyze_result, dictionary="YAWL", strategy="bold97"):
             return l, []
 
     # 使用线程池并行处理
-    min_length = 1 if strategy == "None" else 5
+    min_length = 1 if strategy == "none" else 5
     lengths = list(range(max_length, min_length - 1, -1))
     with ThreadPoolExecutor(max_workers=min(5, len(lengths))) as executor:  # 限制最大线程数
         futures = [executor.submit(_request_words_for_length, l)
@@ -209,25 +212,22 @@ def get_words(analyze_result, dictionary="YAWL", strategy="bold97"):
             l, word_list = future.result()
             results[l] = word_list
 
-    if strategy == "None":
+    if strategy == "none":
         return results
 
     n_ex = ''.join([l[1] for l in letters]).count("!")
-    final_results = {}
+    final_results = {0: []}
     for length, words in results.items():
         if not words:
             continue
         max_ex = min(n_ex, max_length - length)
         for ex in range(max_ex + 1):
-            exlength = length + ex
-            if exlength not in final_results:
-                final_results[exlength] = []
             for word in words:
                 try:
                     sol_word_result = solve_word(word, letters, ex, strategy)
                     if sol_word_result is not None:
                         perm, place, unused, score = sol_word_result
-                        final_results[exlength].append({
+                        final_results[0].append({
                             'word': word,
                             'perm': perm,
                             'place': place,
