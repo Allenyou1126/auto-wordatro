@@ -27,6 +27,7 @@ export type MatchResult = {
 	template: string;
 	score: number;
 	letter: string;
+	font: string;
 };
 
 export type Result = {
