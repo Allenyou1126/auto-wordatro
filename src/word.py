@@ -13,6 +13,15 @@ logger = get_logger(__name__)
 QAT_DICTIONARIES = ["UKACD", "YAWL", "ABLE",
                     "Moby", "PDL", "BNC", "Broda", "Union"]
 
+LETTER_SCORE = {
+    'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1,
+    'F': 4, 'G': 2, 'H': 4, 'I': 1, 'J': 8,
+    'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1,
+    'P': 3, 'Q': 10, 'R': 1, 'S': 1, 'T': 1,
+    'U': 1, 'V': 4, 'W': 4, 'X': 8, 'Y': 4,
+    'Z': 10, '*': 10, '!': 10,
+}
+
 
 def parse_html(html_content):
     # 创建 BeautifulSoup 对象
@@ -76,8 +85,7 @@ def gen_perms(word, n_ex):
         perms.append(''.join(arr))
     return perms
 
-
-def fill_word(word, letters, strategy="bold97"):
+def fill_word(word, letters, strategy):
     unused = letters.copy()
     length = len(word)
     place: list[tuple[str, str] | None] = [None for _ in range(length)]
@@ -122,8 +130,7 @@ def fill_word(word, letters, strategy="bold97"):
     else:
         raise ValueError(f"Unknown strategy: {strategy}")
 
-
-def eval_word(place, unused, stargy="bold97"):
+def eval_word(place, unused, stargy):
     score = 0
     n = len(place)
     if stargy.startswith("bold"):
@@ -145,13 +152,13 @@ def eval_word(place, unused, stargy="bold97"):
         score += sum([2 ** i for i, l in enumerate(place)
                      if l[0] == 'underscore'])
         score += sum([n - i for i, l in enumerate(place) if l[0] == 'italic'])
-        score += n * 0.1
+        score += sum([LETTER_SCORE.get(l[1], 0) for l in place]) * 1e-2
+        score += sum([n - i for i, l in enumerate(place) if l[1] == '!']) * 1e-4
         return score
     else:
         raise ValueError(f"Unknown strategy: {stargy}")
 
-
-def solve_word(word, letters, n_ex, strategy="bold97"):
+def solve_word(word, letters, n_ex, strategy):
     word = word.upper()
     perms = gen_perms(word, n_ex)
     results = []
