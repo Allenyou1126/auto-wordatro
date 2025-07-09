@@ -66,8 +66,8 @@ createRoot(document.getElementById("root")!).render(
 							<Routes>
 								<Route path="/" element={<RootLayout />}>
 									<Route index element={<HomePage />} />
-									<Route path="/analyze/:filename" element={<AnalyzePage />} />
-									<Route path="/debug/:filename" element={<DebugPage />} />
+									<Route path="/analyze" element={<AnalyzePage />} />
+									<Route path="/debug" element={<DebugPage />} />
 									<Route path="/404" element={<NotFoundPage />} />
 									<Route path="*" element={<NotFoundPage />} />
 								</Route>

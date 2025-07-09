@@ -1,4 +1,4 @@
-import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useNavigate } from "react-router";
 import {
 	getUploadedFileUrl,
 	useAnalyze,
@@ -21,6 +21,9 @@ import CardWithTitle from "../components/CardWithTitle";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import { Error } from "../components/Error";
 import Loading from "../components/Loading";
+import { useAtomValue } from "jotai/react";
+import { fileNameState, optionsState } from "../libs/state";
+import { ZoomableImage } from "../components/ZoomableImage";
 
 function PreviewDialog({
 	payload,
@@ -203,10 +206,13 @@ function RegionCard({ region, name }: { region: Result[]; name: string }) {
 export function DebugPage() {
 	const notification = useNotifications();
 	const navigate = useNavigate();
-	const { filename } = useParams();
-	const [searchParams] = useSearchParams();
-	const dictionary = searchParams.get("dictionary");
-	const { data, error, isLoading, mutate } = useAnalyze(filename, dictionary);
+	const options = useAtomValue(optionsState);
+	const filename = useAtomValue(fileNameState);
+	const { data, error, isLoading, mutate } = useAnalyze(
+		filename,
+		options.dictionary,
+		options.strategy
+	);
 	if (error) {
 		console.log(error);
 		notification.show(error.message, { severity: "error" });
@@ -228,12 +234,15 @@ export function DebugPage() {
 			<Grid container spacing={2}>
 				<Grid size={6}>
 					<CardWithTitle title="Original Image">
-						<img width="100%" src={getUploadedFileUrl(res.original_image)} />
+						<ZoomableImage
+							width="100%"
+							src={getUploadedFileUrl(res.original_image)}
+						/>
 					</CardWithTitle>
 				</Grid>
 				<Grid size={6}>
 					<CardWithTitle title="Region Marked Image">
-						<img
+						<ZoomableImage
 							style={{
 								maxWidth: "100%",
 								height: "auto",
@@ -295,10 +304,7 @@ export function DebugPage() {
 							<Button
 								variant="contained"
 								onClick={() => {
-									navigate({
-										pathname: `/analyze/${filename}`,
-										search: searchParams.toString(),
-									});
+									navigate(`/analyze/${filename}`);
 								}}>
 								Back To Analyze Page
 							</Button>

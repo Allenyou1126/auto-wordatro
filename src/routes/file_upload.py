@@ -1,4 +1,5 @@
 import os
+import hashlib
 from flask import Blueprint, request, send_from_directory
 from werkzeug.utils import secure_filename
 from utils import response
@@ -44,6 +45,15 @@ def upload_file():
     if not filename.endswith(ALLOWED_FILE_EXT):
         logger.debug(f"File type is not allowed: {filename}")
         return response.INVALID_PARAMETER_RESPONSE
+
+    hash_obj = hashlib.sha256()
+
+    while chunk := uploaded_file.stream.read(4096):
+        hash_obj.update(chunk)
+
+    uploaded_file.stream.seek(0)
+
+    filename = f"{hash_obj.hexdigest()[:16]}{os.path.splitext(filename)[1]}"
 
     filepath = os.path.join(UPLOAD_DIR, filename)
     logger.info(f"Saving file to: {filepath}")
